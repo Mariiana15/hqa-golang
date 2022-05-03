@@ -4,12 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"path/filepath"
+	"strings"
 )
 
 var oautCodehUrl = "https://app.asana.com/-/oauth_authorize?"
+var oautUrl = "https://app.asana.com/-/oauth_token"
+var projects = "https://app.asana.com/api/1.0/projects"
+var tasks = "https://app.asana.com/api/1.0/tasks"
 
-type MainAsana struct {
+type Asana struct {
 	ClientId     string `json:"clientId"`
 	ClientSecret string `json:"clientSecrect"`
 	RedirectUri  string `json:"redirect_uri"`
@@ -43,17 +49,17 @@ type Task struct {
 	Dependecies []General     `json:"dependencies"`
 }
 
-func (data *MainAsana) GetProperties() {
+func (asana *Asana) GetProperties() {
 
 	path, _ := filepath.Abs("../configuration/config.json")
 	file, _ := ioutil.ReadFile(path)
 	var result map[string]interface{}
 	json.Unmarshal([]byte(file), &result)
 	byteData, _ := json.Marshal(result["asana"])
-	json.Unmarshal(byteData, &data)
+	json.Unmarshal(byteData, &asana)
 }
 
-func GetCode(data MainAsana) (string, error) {
+func GetCode(asana Asana) (string, error) {
 
 	v, err := CreateCodeVerifier()
 	var message string
@@ -63,8 +69,78 @@ func GetCode(data MainAsana) (string, error) {
 	code_verifier := v.String()
 	code_challenge := v.CodeChallengeS256()
 	code_challenge_method := "S256"
-	message = fmt.Sprintf("{\"url\": \"%vclient_id=%v&redirect_uri=%v&response_type=code&state=thisIsARandomString&code_challenge_method=%v&code_challenge=%v&scope=default\",\"code_verifier\":\"%v\"}", oautCodehUrl, data.ClientId, data.RedirectUri, code_challenge_method, code_challenge, code_verifier)
+	message = fmt.Sprintf("{\"url\": \"%vclient_id=%v&redirect_uri=%v&response_type=code&state=thisIsARandomString&code_challenge_method=%v&code_challenge=%v&scope=default\",\"code_verifier\":\"%v\"}", oautCodehUrl, asana.ClientId, asana.RedirectUri, code_challenge_method, code_challenge, code_verifier)
 	return message, nil
+}
+
+func GetParamsOauth(code string, codeVerifier string, asana Asana) *strings.Reader {
+
+	data := url.Values{}
+	data.Set("grant_type", "authorization_code")
+	data.Set("client_id", asana.ClientId)
+	data.Set("client_secret", asana.ClientSecret)
+	data.Set("redirect_uri", asana.RedirectUri)
+	data.Set("code", code)
+	data.Set("code_verifier", codeVerifier)
+	return strings.NewReader(data.Encode())
+}
+
+func OauthAsana(code string, codeVerifier string) *http.Request {
+
+	var asana Asana
+	asana.GetProperties()
+	r, _ := http.NewRequest(http.MethodPost, oautUrl, GetParamsOauth(code, codeVerifier, asana))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	return r
+}
+
+func ProjectsAsana(token string) *http.Request {
+
+	r, _ := http.NewRequest(http.MethodGet, projects, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
+}
+
+func SectionsAsana(token string, project string) *http.Request {
+
+	url := fmt.Sprintf("%v/%v/sections", projects, project)
+	r, _ := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
+}
+
+func TaskSectionAsana(token string, section string) *http.Request {
+
+	r, _ := http.NewRequest(http.MethodGet, tasks, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	values := r.URL.Query()
+	values.Add("section", section)
+	r.URL.RawQuery = values.Encode()
+	return r
+}
+
+func TaskAsana(token string, task string) *http.Request {
+
+	url := fmt.Sprintf("%v/%v", tasks, task)
+	r, _ := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
+}
+
+func StoriesAsana(token string, task string) *http.Request {
+
+	url := fmt.Sprintf("%v/%v/stories", tasks, task)
+	r, _ := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
+}
+
+func DependenciesAsana(token string, task string) *http.Request {
+
+	url := fmt.Sprintf("%v/%v/dependecies", tasks, task)
+	r, _ := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
 }
 
 func GetGeneral(respuestaString string) []General {
@@ -73,7 +149,6 @@ func GetGeneral(respuestaString string) []General {
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &projects)
-	fmt.Println(projects)
 	return projects
 }
 
@@ -97,7 +172,6 @@ func GetStoriesFilter(respuestaString string, value string) []Story {
 	for i := len(story) - 1; i >= 0; i-- {
 		if story[i].Type == value {
 			storyResponse = append(storyResponse, story[i])
-			fmt.Println(story[i].Type)
 		}
 	}
 	return storyResponse
