@@ -56,21 +56,34 @@ func (router_ *Router) validateParams(route string, currentRoute []string) bool 
 	return false
 }
 
+func corsRoute(w http.ResponseWriter) {
+	allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token, token, projectId"
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
+}
+
 func (router_ *Router) ServeHTTP(write_ http.ResponseWriter, request *http.Request) {
-	hanlder, methodExist, exist := router_.FindHandler(request.URL.Path, request.Method)
 
-	if !exist {
-		write_.WriteHeader(http.StatusNotFound)
-		return
-	}
+	corsRoute(write_)
+	if request.Method == "OPTIONS" {
+		write_.WriteHeader(http.StatusOK)
+	} else {
+		hanlder, methodExist, exist := router_.FindHandler(request.URL.Path, request.Method)
 
-	if !methodExist {
-		write_.WriteHeader(http.StatusMethodNotAllowed)
-		return
+		if !exist {
+			write_.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		if !methodExist {
+			write_.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		for k, v := range router_.pathParam {
+			request.Header.Set(k, v)
+		}
+		hanlder(write_, request)
 	}
-	for k, v := range router_.pathParam {
-		request.Header.Set(k, v)
-	}
-	hanlder(write_, request)
 
 }

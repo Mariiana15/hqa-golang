@@ -16,6 +16,8 @@ import (
 func CheckAuth() Middleware {
 	return func(hf http.HandlerFunc) http.HandlerFunc {
 		return func(write_ http.ResponseWriter, request *http.Request) {
+
+			write_.Header().Set("Content-Type", "application/json")
 			authStr := strings.SplitN(request.Header.Get("Authorization"), " ", 2)
 			write_.Header().Set("Content-Type", "application/json")
 			if len(authStr) != 2 || authStr[0] != "Basic" {
@@ -25,7 +27,10 @@ func CheckAuth() Middleware {
 			}
 			payload, _ := base64.StdEncoding.DecodeString(authStr[1])
 			pair := strings.SplitN(string(payload), ":", 2)
-			if len(pair) != 2 || !validateBasic(write_, pair[0], pair[1]) {
+			//if len(pair) != 2 || !validateBasic(write_, pair[0], pair[1]) {
+			validate := true
+			if len(pair) != 2 || !validate {
+
 				write_.WriteHeader(http.StatusUnauthorized)
 				fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgUnauthorized)
 				return
@@ -33,6 +38,7 @@ func CheckAuth() Middleware {
 			hf(write_, request)
 		}
 	}
+
 }
 
 func validateBasic(write_ http.ResponseWriter, username, password string) bool {
