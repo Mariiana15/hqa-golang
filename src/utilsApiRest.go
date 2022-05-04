@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func GetBodyResponse(req *http.Request) map[string]interface{} {
+func GetBodyResponse(req *http.Request) (map[string]interface{}, error) {
 
 	body, error := ioutil.ReadAll(req.Body)
 	if error != nil {
@@ -15,8 +15,8 @@ func GetBodyResponse(req *http.Request) map[string]interface{} {
 	}
 	req.Body.Close()
 	var result map[string]interface{}
-	json.Unmarshal([]byte(body), &result)
-	return result
+	err := json.Unmarshal([]byte(body), &result)
+	return result, err
 }
 
 func GetBodyResponseRequest(client *http.Client, r *http.Request) (string, error) {
@@ -31,4 +31,13 @@ func GetBodyResponseRequest(client *http.Client, r *http.Request) (string, error
 		return "Error leyendo respuesta: ", err
 	}
 	return string(cuerpoRespuesta), nil
+}
+
+func Contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }

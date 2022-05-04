@@ -6,9 +6,35 @@ import (
 	"net/http"
 )
 
+var user = UserHQA{
+	ID:       1,
+	Username: "username",
+	Password: "password",
+	Phone:    "49123454322", //this is a random number
+}
+
 func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
 	write_.WriteHeader(http.StatusOK)
+}
 
+func HandleRoot2(w http.ResponseWriter, r *http.Request) {
+
+	NewWebSocket(w, r)
+}
+
+func HandleRoot3(w http.ResponseWriter, r *http.Request) {
+
+	b, err := GetBodyResponse(r)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgMalFormat)
+		return
+	}
+
+	//you can proceed to save the Todo to a database
+	//but we will just return it to the caller here:
+	byteData, _ := json.Marshal(b)
+	w.Write(byteData)
 }
 
 func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
@@ -29,7 +55,7 @@ func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	result := GetBodyResponse(req)
+	result, _ := GetBodyResponse(req)
 	code := result["code"]
 	code_verifier := result["code_verifier"]
 	client := &http.Client{}
@@ -84,47 +110,65 @@ func HandleAsanaSections(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 }
+func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, elements []General, token string, section string) {
 
+	client := &http.Client{}
+	var tasks []Task
+	for i := len(elements) - 1; i >= 0; i-- {
+		var task Task
+		r := make(chan *http.Request)
+		r2 := make(chan *http.Request)
+		r3 := make(chan *http.Request)
+
+		go getTaskAsync("task", token, elements[i].Gid, r)
+		go getTaskAsync("stories", token, elements[i].Gid, r2)
+		go getTaskAsync("dependencies", token, elements[i].Gid, r3)
+
+		rr := <-r
+		res, err := GetBodyResponseRequest(client, rr)
+		if err != nil {
+			fmt.Fprintf(w, "%v\"%v\"}", res, err)
+		}
+		task = GetTask(res)
+
+		rr2 := <-r2
+		res2, err := GetBodyResponseRequest(client, rr2)
+		if err != nil {
+			fmt.Fprintf(w, "%v\"%v\"}", res, err)
+		}
+		elements_ := GetStoriesFilter(res2, "comment")
+		task.Story = elements_
+
+		rr3 := <-r3
+		res3, err := GetBodyResponseRequest(client, rr3)
+		if err != nil {
+			fmt.Fprintf(w, "%v\"%v\"}", res, err)
+		}
+		elements_dep := GetGeneral(res3)
+		task.Dependecies = elements_dep
+		task.Section = section
+		tasks = append(tasks, task)
+	}
+	fmt.Println(tasks)
+	//json.NewEncoder(w).Encode(task)
+}
 func HandleAsanaSectionsTasks(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r := TaskSectionAsana(token, section)
+	r, t := TaskSectionAsana(token, section)
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
+	}
+	elements := GetGeneral(res)
+	if len(elements) > 0 {
+		fmt.Fprintf(w, "{\"tasks\":\"%v\",\"timeAsync\":\"%v\"}", len(elements), t)
+		go HandleAsanaSectionsTasksAsync(w, req, elements, token, section)
 	} else {
-		elements := GetGeneral(res)
-		var task []Task
-		for i := len(elements) - 1; i >= 0; i-- {
-			r := TaskAsana(token, elements[i].Gid)
-			res, err := GetBodyResponseRequest(client, r)
-			if err != nil {
-				fmt.Fprintf(w, "%v\"%v\"}", res, err)
-			} else {
-				task_und := GetTask(res)
-				r := StoriesAsana(token, elements[i].Gid)
-				res2, err := GetBodyResponseRequest(client, r)
-				if err != nil {
-					fmt.Fprintf(w, "%v\"%v\"}", res, err)
-				} else {
-					elements_ := GetStoriesFilter(res2, "comment")
-					task_und.Story = elements_
-					r := DependenciesAsana(token, elements[i].Gid)
-					res3, err := GetBodyResponseRequest(client, r)
-					if err != nil {
-						fmt.Fprintf(w, "%v\"%v\"}", res, err)
-					} else {
-						elements_dep := GetGeneral(res3)
-						task_und.Dependecies = elements_dep
-						task = append(task, task_und)
-					}
-				}
-			}
-		}
-		json.NewEncoder(w).Encode(task)
+		fmt.Fprintf(w, "[]")
 	}
 }
 
@@ -134,7 +178,7 @@ func HandleAsanaTasks(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r := TaskSectionAsana(token, section)
+	r, _ := TaskSectionAsana(token, section)
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)

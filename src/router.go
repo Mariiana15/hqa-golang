@@ -70,7 +70,6 @@ func (router_ *Router) ServeHTTP(write_ http.ResponseWriter, request *http.Reque
 		write_.WriteHeader(http.StatusOK)
 	} else {
 		hanlder, methodExist, exist := router_.FindHandler(request.URL.Path, request.Method)
-
 		if !exist {
 			write_.WriteHeader(http.StatusNotFound)
 			return

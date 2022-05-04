@@ -13,13 +13,60 @@ import (
 	"time"
 )
 
+func CheckAuthWebSocket() Middleware {
+	return func(hf http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			var ws WebsocketHQA
+			ws.NewWebSocketHQA()
+			if r.Header.Get("Sec-Websocket-Protocol") != ws.Protocol {
+				fmt.Println(401)
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
+				return
+			}
+
+			hf(w, r)
+		}
+	}
+}
+
+func CheckAuthToken() Middleware {
+	return func(hf http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			err := TokenValid(r)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
+				return
+			}
+			_, err = ExtractTokenMetadata(r)
+			if err != nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
+				return
+			}
+			// validar el usuario y el uid en la BBDD
+			//userId, err := FetchAuth(tokenAuth)
+			/*
+				if err != nil {
+					w.WriteHeader(http.StatusUnauthorized)
+					fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
+					return
+				}
+			*/
+			hf(w, r)
+		}
+	}
+}
+
 func CheckAuth() Middleware {
 	return func(hf http.HandlerFunc) http.HandlerFunc {
 		return func(write_ http.ResponseWriter, request *http.Request) {
 
-			write_.Header().Set("Content-Type", "application/json")
 			authStr := strings.SplitN(request.Header.Get("Authorization"), " ", 2)
 			write_.Header().Set("Content-Type", "application/json")
+
 			if len(authStr) != 2 || authStr[0] != "Basic" {
 				write_.WriteHeader(http.StatusUnauthorized)
 				fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgUnauthorized)
@@ -38,7 +85,6 @@ func CheckAuth() Middleware {
 			hf(write_, request)
 		}
 	}
-
 }
 
 func validateBasic(write_ http.ResponseWriter, username, password string) bool {
