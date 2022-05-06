@@ -56,7 +56,7 @@ type Task struct {
 	Priority    int           `json:"priority"`
 	Alerts      int           `json:"alerts"`
 	Scripts     int           `json:"scripts"`
-	Date        string        `json:"date"`
+	Date        int64         `json:"date"`
 	UrlAlert    string        `json:"urlAlert"`
 	UrlScript   string        `json:"urlScript"`
 	Result      Result        `json:"result"`

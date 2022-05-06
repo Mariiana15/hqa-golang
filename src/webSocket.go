@@ -123,12 +123,11 @@ func HandleAsanaSectionsTasksWS(ws *websocket.Conn, elements []General, token st
 		task.Scripts = 1                                   // revisar con la base de datos
 		task.UrlAlert = "www.google.com"                   // revisar con la base de datos
 		task.UrlScript = "http://localhost:3000/dashboard" // revisar con la base de datos
-
-		task.Date = time.Now().String() // revisar con la base de datos
+		task.Date = time.Now().Unix()                      // revisar con la base de datos
 		if int(timeService)*i > timeCurrent {
 			timeCurrent = timeCurrent * timeCurrentSend
 			timeCurrentSend++
-			task.State = "close"                                                         // revisar con la base de datos
+			//task.State = "close"                                                         // revisar con la base de datos
 			task.Result.Message = "Succesful"                                            // revisar con la base de datos
 			task.Result.Alert = 1                                                        // revisar con la base de datos
 			task.Result.UrlAlert = "http://localhost:3000/dashboard"                     // revisar con la base de datos
