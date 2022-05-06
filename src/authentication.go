@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/go-redis/redis"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -41,11 +40,9 @@ type AccessDetails struct {
 	UserId     uint64
 }
 
-var client *redis.Client
-
 func CreateToken(userId uint64) (*TokenDetails, error) {
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 10).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
@@ -262,11 +259,8 @@ func HandleRefresh(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", saveErr.Error())
 			return
 		}
-		tokens := map[string]string{
-			"access_token":  ts.AccessToken,
-			"refresh_token": ts.RefreshToken,
-		}
-		b, _ := json.Marshal(tokens)
+
+		b, _ := json.Marshal(ts)
 		w.Write(b)
 	} else {
 

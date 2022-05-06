@@ -3,6 +3,7 @@ module github.com/Poche-1/entrust_test
 go 1.17
 
 require (
+	github.com/Mariiana15/WebSocket v1.0.0
 	github.com/averageflow/gohooks v1.0.9
 	github.com/averageflow/gohooks/v2 v2.1.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

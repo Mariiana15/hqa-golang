@@ -17,26 +17,6 @@ func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
 	write_.WriteHeader(http.StatusOK)
 }
 
-func HandleRoot2(w http.ResponseWriter, r *http.Request) {
-
-	NewWebSocket(w, r)
-}
-
-func HandleRoot3(w http.ResponseWriter, r *http.Request) {
-
-	b, err := GetBodyResponse(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgMalFormat)
-		return
-	}
-
-	//you can proceed to save the Todo to a database
-	//but we will just return it to the caller here:
-	byteData, _ := json.Marshal(b)
-	w.Write(byteData)
-}
-
 func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
@@ -166,7 +146,7 @@ func HandleAsanaSectionsTasks(w http.ResponseWriter, req *http.Request) {
 	elements := GetGeneral(res)
 	if len(elements) > 0 {
 		fmt.Fprintf(w, "{\"tasks\":\"%v\",\"timeAsync\":\"%v\"}", len(elements), t)
-		go HandleAsanaSectionsTasksAsync(w, req, elements, token, section)
+		HandleAsanaSectionsTasksAsync(w, req, elements, token, section)
 	} else {
 		fmt.Fprintf(w, "[]")
 	}

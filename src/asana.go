@@ -49,6 +49,25 @@ type Task struct {
 	Link        string        `json:"permalink_url"`
 	Story       []Story       `json:"stories"`
 	Dependecies []General     `json:"dependencies"`
+	State       string        `json:"state"`
+	TypeTest    string        `json:"typeTest"`
+	TypeUS      string        `json:"typeUS"`
+	UserStory   string        `json:"userStory"`
+	Priority    int           `json:"priority"`
+	Alerts      int           `json:"alerts"`
+	Scripts     int           `json:"scripts"`
+	Date        string        `json:"date"`
+	UrlAlert    string        `json:"urlAlert"`
+	UrlScript   string        `json:"urlScript"`
+	Result      Result        `json:"result"`
+}
+type Result struct {
+	Message   string `json:"message"`
+	Alert     int    `json:"alert"`
+	UrlAlert  string `json:"urlAlert"`
+	Detail    string `json:"detail"`
+	Script    string `json:"script"`
+	UrlScript string `json:"urlScript"`
 }
 
 func (asana *Asana) GetProperties() {

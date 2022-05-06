@@ -24,8 +24,12 @@ func main() {
 
 	server.Handle("POST", "/login", server.AddMiddleware(HandleLoginHQA, CheckAuth()))
 	server.Handle("POST", "/todo", server.AddMiddleware(HandleRoot3, CheckAuthToken()))
+
+	server.Handle("POST", "/test/webhook", HandleRoot3)
 	server.Handle("POST", "/token/logout", server.AddMiddleware(HandleLogOut, CheckAuthToken()))
-	server.Handle("POST", "/token/refresh", server.AddMiddleware(HandleRefresh, CheckAuthToken()))
+	server.Handle("POST", "/token/refresh", server.AddMiddleware(HandleRefresh))
+
+	server.Handle("GET", "/hack/protocol", server.AddMiddleware(HandleProtocol, CheckAuthToken()))
 
 	server.Handle("POST", "/cars", server.AddMiddleware(CarPostRequest, CheckAuth(), CheckBodyCar(), Loggin()))
 	server.Handle("GET", "/cars/:id", server.AddMiddleware(CarGetRequest, CheckAuth(), Loggin()))

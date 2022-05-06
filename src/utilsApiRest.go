@@ -20,7 +20,6 @@ func GetBodyResponse(req *http.Request) (map[string]interface{}, error) {
 }
 
 func GetBodyResponseRequest(client *http.Client, r *http.Request) (string, error) {
-
 	respuesta, err := client.Do(r)
 	if err != nil {
 		return "Error haciendo petición: ", err
