@@ -129,7 +129,8 @@ func HandleAsanaSectionsTasksWS(ws *websocket.Conn, elements []General, token st
 			timeCurrentSend++
 			//task.State = "close"                                                         // revisar con la base de datos
 			task.Result.Message = "Succesful"                                            // revisar con la base de datos
-			task.Result.Alert = 1                                                        // revisar con la base de datos
+			task.Result.Alert = 1                                                        // revisar con la base de
+			task.AddInfo = true                                                          // revisar con la base de datos
 			task.Result.UrlAlert = "http://localhost:3000/dashboard"                     // revisar con la base de datos
 			task.Result.Detail = "Aqui llegara la informacion de las pruebas realizadas" // revisar con la base de datos
 			task.Result.Script = "Script 1 generado"                                     // revisar con la base de datos

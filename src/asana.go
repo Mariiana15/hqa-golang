@@ -59,6 +59,7 @@ type Task struct {
 	Date        int64         `json:"date"`
 	UrlAlert    string        `json:"urlAlert"`
 	UrlScript   string        `json:"urlScript"`
+	AddInfo     bool          `json:"addInfo"`
 	Result      Result        `json:"result"`
 }
 type Result struct {
