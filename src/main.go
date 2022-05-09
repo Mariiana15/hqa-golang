@@ -15,6 +15,7 @@ func main() {
 	server.Handle("GET", "/asana/code", server.AddMiddleware(HandleAsanaCode, CheckAuth()))
 	server.Handle("GET", "/asana/projects", server.AddMiddleware(HandleAsanaProjects, CheckAuth()))
 	server.Handle("GET", "/asana/sections", server.AddMiddleware(HandleAsanaSections, CheckAuth()))
+	server.Handle("GET", "/asana/sections/:id", server.AddMiddleware(HandleAsanaSections, CheckAuth()))
 	server.Handle("GET", "/asana/tasks", server.AddMiddleware(HandleAsanaTasks, CheckAuth()))
 	server.Handle("GET", "/asana/tasks/:id", server.AddMiddleware(HandleAsanaTasksId, CheckAuth()))
 	server.Handle("GET", "/asana/tasks/:id/stories", server.AddMiddleware(HandleAsanaTasksIdStories, CheckAuth()))

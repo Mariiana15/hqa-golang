@@ -90,6 +90,28 @@ func HandleAsanaSections(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 }
+
+func HandleAsanaSectionsId(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	client := &http.Client{}
+	token := req.Header.Get("token")
+	section := req.Header.Get("id")
+	r := SectionsAsanaId(token, section)
+	res, err := GetBodyResponseRequest(client, r)
+	if err != nil {
+		fmt.Fprintf(w, "%v\"%v\"}", res, err)
+	} else {
+		elements := GetGeneral(res)
+		if len(elements) > 0 {
+			json.NewEncoder(w).Encode(elements)
+		} else {
+			fmt.Fprintf(w, "[]")
+
+		}
+	}
+}
+
 func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, elements []General, token string, section string) {
 
 	client := &http.Client{}
@@ -126,7 +148,6 @@ func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, ele
 		}
 		elements_dep := GetGeneral(res3)
 		task.Dependecies = elements_dep
-		task.Section = section
 		tasks = append(tasks, task)
 	}
 	fmt.Println(tasks)

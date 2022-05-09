@@ -19,7 +19,7 @@ type WebsocketHQA struct {
 
 var upgrader = websocket.Upgrader{ReadBufferSize: 1024,
 	WriteBufferSize:  1024,
-	HandshakeTimeout: 15000, // <-- add this line
+	HandshakeTimeout: 60000, // <-- add this line
 }
 
 type Message struct {

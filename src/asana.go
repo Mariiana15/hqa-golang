@@ -14,6 +14,7 @@ var oautCodehUrl = "https://app.asana.com/-/oauth_authorize?"
 var oautUrl = "https://app.asana.com/-/oauth_token"
 var projects = "https://app.asana.com/api/1.0/projects"
 var tasks = "https://app.asana.com/api/1.0/tasks"
+var sections = "https://app.asana.com/api/1.0/sections"
 
 type Asana struct {
 	ClientId      string `json:"clientId"`
@@ -43,7 +44,6 @@ type Task struct {
 	Gid         string        `json:"gid"`
 	Name        string        `json:"name"`
 	Notes       string        `json:"notes"`
-	Section     string        `json:"section"`
 	Project     []General     `json:"projects"`
 	CustomField []CustomField `json:"custom_fields"`
 	Link        string        `json:"permalink_url"`
@@ -69,6 +69,12 @@ type Result struct {
 	Detail    string `json:"detail"`
 	Script    string `json:"script"`
 	UrlScript string `json:"urlScript"`
+}
+
+type Section struct {
+	Name      string `json:"name"`
+	Gid       string `json:"gid"`
+	StoryUser []Task `json:"storyUser"`
 }
 
 func (asana *Asana) GetProperties() {
@@ -131,6 +137,14 @@ func SectionsAsana(token string, project string) *http.Request {
 	return r
 }
 
+func SectionsAsanaId(token string, sectionId string) *http.Request {
+
+	url := fmt.Sprintf("%v/%v", sections, sectionId)
+	r, _ := http.NewRequest(http.MethodGet, url, nil)
+	r.Header.Add("Authorization", "Bearer "+token)
+	return r
+}
+
 func TaskSectionAsana(token string, section string) (*http.Request, int16) {
 
 	r, _ := http.NewRequest(http.MethodGet, tasks, nil)
@@ -170,6 +184,15 @@ func DependenciesAsana(token string, task string) *http.Request {
 func GetGeneral(respuestaString string) []General {
 	var response map[string]interface{}
 	var projects []General
+	json.Unmarshal([]byte(respuestaString), &response)
+	byteData, _ := json.Marshal(response["data"])
+	json.Unmarshal(byteData, &projects)
+	return projects
+}
+
+func GetGeneralUnd(respuestaString string) General {
+	var response map[string]interface{}
+	var projects General
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &projects)
