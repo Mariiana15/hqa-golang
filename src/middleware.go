@@ -46,15 +46,6 @@ func CheckAuthToken() Middleware {
 				fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
 				return
 			}
-			// validar el usuario y el uid en la BBDD
-			//userId, err := FetchAuth(tokenAuth)
-			/*
-				if err != nil {
-					w.WriteHeader(http.StatusUnauthorized)
-					fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
-					return
-				}
-			*/
 			hf(w, r)
 		}
 	}
@@ -87,9 +78,18 @@ func CheckAuth() Middleware {
 	}
 }
 
+func HandlerResponse() Middleware {
+	return func(hf http.HandlerFunc) http.HandlerFunc {
+		return func(write_ http.ResponseWriter, request *http.Request) {
+
+			write_.Header().Set("Content-Type", "application/json")
+			hf(write_, request)
+		}
+	}
+}
 func validateBasic(write_ http.ResponseWriter, username, password string) bool {
 	var auth Auth
-	err := auth.get("entrust")
+	err := auth.getUserBasic("0", "x")
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)

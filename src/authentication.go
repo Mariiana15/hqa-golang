@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -15,11 +14,30 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+type Auth struct {
+	User string `json:"user"`
+	Pass string `json:"pass"`
+	Id   string `json:"id"`
+}
+
+type Token struct {
+	UserId   string `json:"userId"`
+	Token    string `json:"token"`
+	Id       string `json:"id"`
+	ExpireAt int64  `json:"expireAt"`
+	State    string `json:"state"`
+}
+
 type UserHQA struct {
 	ID       uint64 `json:"id"`
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Phone    string `json:"phone"`
+}
+
+type UserIntro struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
 }
 
 type TokenDetails struct {
@@ -30,6 +48,7 @@ type TokenDetails struct {
 	AtExpires    int64
 	RtExpires    int64
 }
+
 type Todo struct {
 	UserID uint64 `json:"user_id"`
 	Title  string `json:"title"`
@@ -37,14 +56,14 @@ type Todo struct {
 
 type AccessDetails struct {
 	AccessUuid string
-	UserId     uint64
+	UserId     string
 }
 
-func CreateToken(userId uint64) (*TokenDetails, error) {
+func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
+
 	td := &TokenDetails{}
 	td.AtExpires = time.Now().Add(time.Minute * 10).Unix()
 	td.AccessUuid = uuid.NewV4().String()
-
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
 	td.RefreshUuid = uuid.NewV4().String()
 
@@ -62,15 +81,29 @@ func CreateToken(userId uint64) (*TokenDetails, error) {
 	if err != nil {
 		return nil, err
 	}
+	var token Token
+	token.ExpireAt = td.AtExpires
+	token.UserId = userId
+	token.Token = td.AccessToken
+	token.insert(true, typeToken)
+	if err != nil {
+		return nil, err
+	}
 	//Creating Refresh Token
 	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf") //this should be in an env file
 	rtClaims := jwt.MapClaims{}
 	rtClaims["refresh_uuid"] = td.RefreshUuid
 	rtClaims["user_id"] = userId
 	rtClaims["exp"] = td.RtExpires
-	atClaims["create"] = time.Now().Unix()
+	rtClaims["create"] = time.Now().Unix()
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(os.Getenv("REFRESH_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+	token.ExpireAt = td.RtExpires
+	token.Token = td.RefreshToken
+	token.insert(false, typeToken)
 	if err != nil {
 		return nil, err
 	}
@@ -78,19 +111,27 @@ func CreateToken(userId uint64) (*TokenDetails, error) {
 
 }
 
-func CreateAuth(userid uint64, td *TokenDetails) error {
-	//at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	//rt := time.Unix(td.RtExpires, 0)
-	//now := time.Now()
+func CreateAuth(userid string, td *TokenDetails) error {
 
-	/*errAccess := client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
-	if errAccess != nil {
-		return errAccess
+	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
+	var token Token
+	token.UserId = userid
+	err := token.getToken(true)
+	if err != nil {
+		return err
 	}
-	errRefresh := client.Set(td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
-	if errRefresh != nil {
-		return errRefresh
-	}*/
+	if at.Sub(now) < 0 {
+		fmt.Errorf("token access expired")
+	}
+	err = token.getToken(false)
+	if err != nil {
+		return err
+	}
+	if rt.Sub(now) < 0 {
+		fmt.Errorf("token refresh expired")
+	}
 	return nil
 }
 
@@ -119,6 +160,24 @@ func TokenValid(r *http.Request) error {
 	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
 		return err
 	}
+	claims, ok2 := token.Claims.(jwt.MapClaims)
+	if ok2 && token.Valid {
+		var token_ Token
+		token_.UserId = claims["user_id"].(string)
+		errAu := token_.getToken(true)
+		if errAu != nil {
+			log.Println(errAu)
+			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
+		}
+		stoken := ExtractToken(r)
+		if stoken != token_.Token {
+			log.Println(stoken)
+			log.Println("---")
+			log.Println(token_.Token)
+			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
+		}
+	}
+
 	return nil
 }
 func ExtractToken(r *http.Request) string {
@@ -143,7 +202,7 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 		if !ok {
 			return nil, err
 		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		userId := claims["user_id"].(string)
 		if err != nil {
 			return nil, err
 		}
@@ -155,17 +214,28 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	return nil, err
 }
 
-func GetUserHQA(req *http.Request) (UserHQA, error) {
+func GetUserHQA(req *http.Request) (Auth, string) {
 
-	var user UserHQA
-	body, error := ioutil.ReadAll(req.Body)
-	if error != nil {
-		fmt.Println(error)
+	var user UserIntro
+	var auth Auth
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		return auth, fmt.Sprintf("{\"error\": \"%v\"}", err.Error())
 	}
 	req.Body.Close()
-	err := json.Unmarshal([]byte(body), &user)
+	err = json.Unmarshal([]byte(body), &user)
+	if err != nil {
+		return auth, fmt.Sprintf("{\"error\": \"%v\"}", err.Error())
+	}
+	err = auth.getUserBasic(user.ID, user.Email)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if user.Email != auth.User || user.ID != auth.Pass {
+		return auth, fmt.Sprintf("{\"error\": \"%v\"}", "Please provide valid login details")
+	}
 
-	return user, err
+	return auth, ""
 }
 
 /*
@@ -225,28 +295,21 @@ func HandleRefresh(w http.ResponseWriter, r *http.Request) {
 	//Since token is valid, get the uuid:
 	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
 	if ok && token.Valid {
-		//refreshUuid, ok := claims["refresh_uuid"].(string) //convert the interface to string
-
-		_, ok := claims["refresh_uuid"].(string) //convert the interface to string
+		_, ok = claims["refresh_uuid"].(string) //convert the interface to string
 		if !ok {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
 			return
 		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+
+		userId := claims["user_id"].(string)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
 			return
 		}
-		//Delete the previous Refresh Token ---> BBDD
-		/*deleted, delErr := DeleteAuth(refreshUuid)
-		if delErr != nil || deleted == 0 { //if any goes wrong
-			c.JSON(http.StatusUnauthorized, "unauthorized")
-			return
-		}*/
 		//Create new pairs of refresh and access tokens
-		ts, createErr := CreateToken(userId)
+		ts, createErr := CreateToken(userId, true)
 		if createErr != nil {
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", createErr.Error())
@@ -259,7 +322,6 @@ func HandleRefresh(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", saveErr.Error())
 			return
 		}
-
 		b, _ := json.Marshal(ts)
 		w.Write(b)
 	} else {
@@ -278,35 +340,30 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
 		return
 	}
-	/* borra de la base de datos
-	deleted, delErr := DeleteAuth(au.AccessUuid)
-	if delErr != nil || deleted == 0 { //if any goes wrong
+
+	var token Token
+	token.Id = au.AccessUuid
+	deleteErr := token.deleteToken(true)
+	if deleteErr != nil { //if any goes wrong
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)
 		return
-	}*/
-	log.Println(au)
-	fmt.Fprintf(w, "{\"error\": \"%v\"}", "Successfully logged out")
+	}
+	fmt.Fprintf(w, "{\"message\": \"%v\"}", "Successfully logged out")
 }
 
-func HandleLoginHQA(w http.ResponseWriter, r *http.Request) {
+func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	u, err := GetUserHQA(r)
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
+	if err != "" {
+		w.WriteHeader(http.StatusNonAuthoritativeInfo)
+		fmt.Fprintf(w, err)
 		return
 	}
-	if user.Username != u.Username || user.Password != u.Password {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", "Please provide valid login details")
-		return
-	}
-	token, err := CreateToken(user.ID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	token, err2 := CreateToken(u.Id, false)
+	if err2 != nil {
+		w.WriteHeader(http.StatusNonAuthoritativeInfo)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2.Error())
 		return
 	}
 	w.WriteHeader(http.StatusOK)

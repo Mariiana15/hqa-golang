@@ -12,11 +12,6 @@ type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 type MetaData interface{}
 
-type Auth struct {
-	User string `json:"user"`
-	Pass string `json:"user_pass"`
-}
-
 type Car struct {
 	Id          string `json:"id"`
 	Brand       string `json:"brand" validate:"required,alphanum"`

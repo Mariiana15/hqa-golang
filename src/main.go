@@ -23,12 +23,12 @@ func main() {
 	server.Handle("GET", "/asana/sections/tasks", server.AddMiddleware(HandleAsanaSectionsTasks, CheckAuth()))
 	server.Handle("POST", "/asana/oauth", server.AddMiddleware(HandleAsanaOauth, CheckAuth()))
 
-	server.Handle("POST", "/login", server.AddMiddleware(HandleLoginHQA, CheckAuth()))
-	server.Handle("POST", "/todo", server.AddMiddleware(HandleRoot3, CheckAuthToken()))
-
-	server.Handle("POST", "/test/webhook", HandleRoot3)
+	server.Handle("POST", "/login", server.AddMiddleware(HandleLogin, HandlerResponse()))
+	server.Handle("POST", "/token/refresh", server.AddMiddleware(HandleRefresh, HandlerResponse()))
 	server.Handle("POST", "/token/logout", server.AddMiddleware(HandleLogOut, CheckAuthToken()))
-	server.Handle("POST", "/token/refresh", server.AddMiddleware(HandleRefresh))
+
+	server.Handle("POST", "/todo", server.AddMiddleware(HandleRoot3, CheckAuthToken()))
+	server.Handle("POST", "/test/webhook", HandleRoot3)
 
 	server.Handle("GET", "/hack/protocol", server.AddMiddleware(HandleProtocol, CheckAuthToken()))
 

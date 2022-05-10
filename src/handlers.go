@@ -6,13 +6,6 @@ import (
 	"net/http"
 )
 
-var user = UserHQA{
-	ID:       1,
-	Username: "username",
-	Password: "password",
-	Phone:    "49123454322", //this is a random number
-}
-
 func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
 	write_.WriteHeader(http.StatusOK)
 }
