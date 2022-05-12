@@ -62,7 +62,7 @@ type AccessDetails struct {
 func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
 
 	td := &TokenDetails{}
-	td.AtExpires = time.Now().Add(time.Minute * 10).Unix()
+	td.AtExpires = time.Now().Add(time.Minute * 1).Unix()
 	td.AccessUuid = uuid.NewV4().String()
 	td.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
 	td.RefreshUuid = uuid.NewV4().String()
@@ -111,32 +111,34 @@ func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
 
 }
 
-func CreateAuth(userid string, td *TokenDetails) error {
+func CreateAuth(userid string) error {
 
-	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
-	rt := time.Unix(td.RtExpires, 0)
-	now := time.Now()
 	var token Token
 	token.UserId = userid
-	err := token.getToken(true)
+	err := token.getToken(false)
 	if err != nil {
 		return err
-	}
-	if at.Sub(now) < 0 {
-		fmt.Errorf("token access expired")
-	}
-	err = token.getToken(false)
-	if err != nil {
-		return err
-	}
-	if rt.Sub(now) < 0 {
-		fmt.Errorf("token refresh expired")
 	}
 	return nil
 }
 
 func VerifyToken(r *http.Request) (*jwt.Token, error) {
 	tokenString := ExtractToken(r)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		//Make sure that the token method conform to "SigningMethodHMAC"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("ACCESS_SECRET")), nil
+	})
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return token, nil
+}
+
+func VerifyTokenWS(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		//Make sure that the token method conform to "SigningMethodHMAC"
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -180,6 +182,33 @@ func TokenValid(r *http.Request) error {
 
 	return nil
 }
+
+func TokenValidWS(tokenString string) error {
+
+	token, err := VerifyTokenWS(tokenString)
+	if err != nil {
+		return err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return err
+	}
+	claims, ok2 := token.Claims.(jwt.MapClaims)
+	if ok2 && token.Valid {
+		var token_ Token
+		token_.UserId = claims["user_id"].(string)
+		errAu := token_.getToken(true)
+		if errAu != nil {
+			log.Println(errAu)
+			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
+		}
+		if tokenString != token_.Token {
+			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
+		}
+	}
+
+	return nil
+}
+
 func ExtractToken(r *http.Request) string {
 
 	bearToken := r.Header.Get("Authorization")
@@ -189,6 +218,31 @@ func ExtractToken(r *http.Request) string {
 	}
 	return ""
 }
+func ExtractTokenMetadataWS(tokenString string) (*AccessDetails, error) {
+	token, err := VerifyTokenWS(tokenString)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		accessUuid, ok := claims["access_uuid"].(string)
+		if !ok {
+			return nil, err
+		}
+		userId := claims["user_id"].(string)
+		if err != nil {
+			return nil, err
+		}
+		return &AccessDetails{
+			AccessUuid: accessUuid,
+			UserId:     userId,
+		}, nil
+	}
+	return nil, err
+}
+
 func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	token, err := VerifyToken(r)
 	if err != nil {
@@ -308,18 +362,23 @@ func HandleRefresh(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
 			return
 		}
+		//save the tokens metadata to redis
+		saveErr := CreateAuth(userId)
+		if saveErr != nil {
+
+			log.Println("555")
+			log.Println(saveErr)
+			w.WriteHeader(http.StatusForbidden)
+			fmt.Fprintf(w, "{\"error\": \"%v\"}", saveErr.Error())
+			return
+		}
+
 		//Create new pairs of refresh and access tokens
 		ts, createErr := CreateToken(userId, true)
 		if createErr != nil {
+			log.Println(createErr)
 			w.WriteHeader(http.StatusForbidden)
 			fmt.Fprintf(w, "{\"error\": \"%v\"}", createErr.Error())
-			return
-		}
-		//save the tokens metadata to redis
-		saveErr := CreateAuth(userId, ts)
-		if saveErr != nil {
-			w.WriteHeader(http.StatusForbidden)
-			fmt.Fprintf(w, "{\"error\": \"%v\"}", saveErr.Error())
 			return
 		}
 		b, _ := json.Marshal(ts)

@@ -27,6 +27,7 @@ type Message struct {
 	Token   string `json:"token"`
 	Type    string `json:"type"`
 	State   string `json:"state"`
+	User    string `json:"userId"`
 }
 type Params struct {
 	Token    string `json:"token"`
@@ -107,19 +108,28 @@ func GetMessageJsonWS(ws *websocket.Conn) Message {
 func listenMessageWS(ws *websocket.Conn) Message {
 	var message Message
 	for {
-		//	mt, message, _ := ws.ReadMessage()
-		//	log.Printf("Message received: %s", message)
-		err := ws.ReadJSON(&message)
+		_, message2, _ := ws.ReadMessage()
+		//err := ws.ReadJSON(&message)
+		err := json.Unmarshal([]byte(message2), &message)
 		if err != nil {
 			SendMessageJsonWS(ws, fmt.Sprintf("{\"error\": \"%v\"}", msgDataCorrupt))
 			ws.Close()
 			break
 		}
-		if message.Token == "" || message.Token != "key" {
-			SendMessageJsonWS(ws, fmt.Sprintf("{\"error\": \"%v\"}", msgDataCorrupt))
+		err = TokenValidWS(message.Token)
+		if err != nil {
+			SendMessageJsonWS(ws, fmt.Sprintf("{\"error\": \"%v\"}", err.Error()))
 			ws.Close()
 			break
 		}
+		acc, err2 := ExtractTokenMetadataWS(message.Token)
+		if err2 != nil {
+			SendMessageJsonWS(ws, fmt.Sprintf("{\"error\": \"%v\"}", err.Error()))
+			ws.Close()
+			break
+		}
+		message.User = acc.UserId
+
 		if message.State != "" {
 			log.Println("Validate---!")
 			Dispatcher(ws, message)

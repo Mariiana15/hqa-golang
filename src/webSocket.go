@@ -1,35 +1,21 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
+	uuid "github.com/satori/go.uuid"
 )
 
 var protocolBD = "hqaProtocol"
 var protocolDBTimer = 60000
 
-func HandleRoot2(w http.ResponseWriter, r *http.Request) {
+func HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	NewWebSocket(w, r)
-
-}
-
-func HandleRoot3(w http.ResponseWriter, r *http.Request) {
-
-	b, err := GetBodyResponse(r)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgMalFormat)
-		return
-	}
-
-	byteData, _ := json.Marshal(b)
-	w.Write(byteData)
 }
 
 func HandleProtocol(w http.ResponseWriter, req *http.Request) {
@@ -41,138 +27,214 @@ func HandleProtocol(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+/// dispatcher
+
 func Dispatcher(ws *websocket.Conn, m Message) {
 	switch m.Type {
 	case "tasks":
-		log.Println("Dispatcher")
-		Tasks(ws, m)
+		handelCreateSectionTask(ws, m)
+		defer handelGeteSectionTask(ws, m)
+	case "select":
+		log.Println("Get task Dispatcher")
+		handelGeteSectionTask(ws, m)
 	default:
 		SendMessageWS(ws, "It is connect")
 	}
 }
 
-func Tasks(ws *websocket.Conn, m Message) {
+////
 
-	client := &http.Client{}
+func getTaskSection(client *http.Client, m Message) ([]General, int16, error) {
 
 	r, t := TaskSectionAsana(m.Message.Token, m.Message.ObjectId)
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
-		handlerExceptionWS(ws, err.Error(), stateKO)
-		log.Printf("Error: %v", err)
+		return nil, 0, err
 	}
 	elements := GetGeneral(res)
-
-	r2 := SectionsAsanaId(m.Message.Token, m.Message.ObjectId)
-	res2, err2 := GetBodyResponseRequest(client, r2)
-	if err2 != nil {
-		handlerExceptionWS(ws, err.Error(), stateKO)
-		log.Printf("Error: %v", err)
-	}
-	sectionId := GetGeneralUnd(res2)
-
-	var sections []Section
-	if len(elements) > 0 {
-		log.Println("task --elments > 0")
-
-		//BD falta realizar la logica
-		var section Section
-		section.Gid = m.Message.ObjectId
-		tasks := HandleAsanaSectionsTasksWS(ws, elements, m.Message.Token, section, t, sections)
-		section.StoryUser = tasks
-		section.Name = sectionId.Name
-		sections = append(sections, section)
-		/// BD 2
-		section.Gid = m.Message.ObjectId
-		section.Name = section.Name + " -project 2"
-		tasks = HandleAsanaSectionsTasksWS(ws, elements, m.Message.Token, section, t, sections)
-		section.StoryUser = tasks
-		sections = append(sections, section)
-		ws.WriteJSON(sections)
-		ws.Close()
-	} else {
-
-		log.Println("task --elments = 0")
-		SendMessageJsonWS(ws, fmt.Sprintf("%v", sections))
-		ws.Close()
-	}
+	return elements, t, nil
 }
 
-func HandleAsanaSectionsTasksWS(ws *websocket.Conn, elements []General, token string, sectionObj Section, timeService int16, sectionList []Section) []Task {
+func getSection(client *http.Client, m Message) (Section, error) {
 
+	r := SectionsAsanaId(m.Message.Token, m.Message.ObjectId)
+	res, err := GetBodyResponseRequest(client, r)
+	var sectionId Section
+
+	if err != nil {
+		return sectionId, err
+	}
+	sectionId = GetSectionId(res)
+	return sectionId, nil
+}
+
+func handelGeteSectionTask(ws *websocket.Conn, m Message) {
+
+	var sections []Section
+	errDB := getUserStoriesComplete(&sections, m.User)
+	if errDB != nil {
+		handlerExceptionWS(ws, errDB.Error(), stateKO)
+		ws.Close()
+		return
+	}
+	ws.WriteJSON(sections)
+	ws.Close()
+}
+
+func handelCreateSectionTask(ws *websocket.Conn, m Message) {
+
+	var sections []Section
 	client := &http.Client{}
+	elements, t, _ := getTaskSection(client, m)
+	sectionId, _ := getSection(client, m)
+	sectionId.ID = uuid.NewV4().String()
+
+	if len(elements) > 0 {
+		tasks, err := HandleAsanaSectionsTasksWS(client, ws, elements, m.Message.Token, &sectionId, t, sections, m.User)
+		if err != nil {
+			log.Println(err)
+			handlerExceptionWS(ws, err.Error(), stateKO)
+			ws.Close()
+			return
+		}
+		sectionId.StoryUser = tasks
+	}
+	errDB := sectionId.setSectionProject(m.User)
+	if errDB != nil {
+		handlerExceptionWS(ws, errDB.Error(), stateKO)
+		ws.Close()
+		return
+	}
+	sections = append(sections, sectionId)
+	ws.WriteJSON(sections)
+	ws.Close()
+}
+
+func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, elements []General, token string, sectionObj *Section, timeService int16, sectionList []Section, user string) ([]Task, error) {
+
 	var tasks []Task
 	timeCurrent := 3000
 	timeCurrentSend := 1
+
 	for i := 0; i <= len(elements)-1; i++ {
+
 		var task Task
-		r := make(chan *http.Request)
-		r2 := make(chan *http.Request)
-		r3 := make(chan *http.Request)
+		rt := make(chan *http.Request)
+		rs := make(chan *http.Request)
+		rd := make(chan *http.Request)
 
-		go getTaskAsync("task", token, elements[i].Gid, r)
-		go getTaskAsync("stories", token, elements[i].Gid, r2)
-		go getTaskAsync("dependencies", token, elements[i].Gid, r3)
+		go getTaskAsync("task", token, elements[i].Gid, rt)
+		go getTaskAsync("stories", token, elements[i].Gid, rs)
+		go getTaskAsync("dependencies", token, elements[i].Gid, rd)
 
-		rr := <-r
-		res, err := GetBodyResponseRequest(client, rr)
+		rst := <-rt
+		res, err := GetBodyResponseRequest(client, rst)
 		if err != nil {
-			handlerExceptionWS(ws, err.Error(), stateKO)
-			log.Printf("Error: %v", err)
+			return nil, err
 		}
 		task = GetTask(res)
-
-		rr2 := <-r2
-		res2, err := GetBodyResponseRequest(client, rr2)
-		if err != nil {
-			handlerExceptionWS(ws, err.Error(), stateKO)
-			log.Printf("Error: %v", err)
+		errDB := task.setUserStoryAsana(sectionObj.ID)
+		if errDB != nil {
+			return nil, err
 		}
-		elements_ := GetStoriesFilter(res2, "comment")
+		errDB = task.setUserStoryAsanaCField()
+		if errDB != nil {
+			return nil, err
+		}
+
+		rss := <-rs
+		resSt, err := GetBodyResponseRequest(client, rss)
+		if err != nil {
+			return nil, err
+		}
+		elements_ := GetStoriesFilter(resSt, "comment")
 		task.Story = elements_
-
-		rr3 := <-r3
-		res3, err := GetBodyResponseRequest(client, rr3)
-		if err != nil {
-			handlerExceptionWS(ws, err.Error(), stateKO)
-			log.Printf("Error: %v", err)
+		errDB = task.setUserStoryAsanaStories()
+		if errDB != nil {
+			return nil, err
 		}
-		elements_dep := GetGeneral(res3)
-		task.Dependecies = elements_dep
-		task.State = "open"                                // revisar con la base de datos
-		task.TypeTest = "TSH001"                           // revisar con la base de datos
-		task.TypeUS = "alert"                              // revisar con la base de datos
-		task.UserStory = task.Notes                        // revisar con la base de datos
-		task.Priority = 45                                 // revisar con la base de datos
-		task.Alerts = 2                                    // revisar con la base de datos
-		task.Scripts = 1                                   // revisar con la base de datos
-		task.UrlAlert = "www.google.com"                   // revisar con la base de datos
-		task.UrlScript = "http://localhost:3000/dashboard" // revisar con la base de datos
-		task.Date = time.Now().Unix()                      // revisar con la base de datos
 
+		rsd := <-rd
+		resDep, err := GetBodyResponseRequest(client, rsd)
+		if err != nil {
+			return nil, err
+		}
+		elements_dep := GetGeneral(resDep)
+		task.Dependecies = elements_dep
+		errDB = task.setUserStoryAsanaDependence()
+		if errDB != nil {
+			return nil, err
+		}
+		errTask := createUserStoryHQA(&task, user)
+		if errTask != nil {
+			return nil, errTask
+		}
+
+		errTaskR := createUserStoryResultHQA(&task)
+		if errTaskR != nil {
+			return nil, errTaskR
+		}
 		if int(timeService)*(i+1) > timeCurrent {
 
-			task.Date = time.Now().Add(time.Hour * -240).Unix() // revisar con la base de datos
 			timeCurrent = timeCurrent * timeCurrentSend
 			timeCurrentSend++
-			//task.State = "close"
-			task.Alerts = 3                                                              // revisar con la base de datos                                                    // revisar con la base de datos
-			task.Result.Message = "Succesful"                                            // revisar con la base de datos
-			task.Result.Alert = 1                                                        // revisar con la base de
-			task.AddInfo = true                                                          // revisar con la base de datos
-			task.Result.UrlAlert = "http://localhost:3000/dashboard"                     // revisar con la base de datos
-			task.Priority = 75                                                           // revisar con la base de datos
-			task.Result.Detail = "Aqui llegara la informacion de las pruebas realizadas" // revisar con la base de datos
-			task.Result.Script = "Script 1 generado"                                     // revisar con la base de datos
-			task.Result.UrlScript = "http://localhost:3000/dashboard"                    // revisar con la base de datos
 			tasks = append(tasks, task)
 			sectionObj.StoryUser = tasks
-			sectionList = append(sectionList, sectionObj)
+			sectionList = append(sectionList, *sectionObj)
 			ws.WriteJSON(sectionList)
 		} else {
 			tasks = append(tasks, task)
 		}
-	}
-	return tasks
 
+	}
+	return tasks, nil
+}
+
+func createUserStory_(task Task) error {
+
+	return nil
+}
+
+func createUserStoryHQA(task *Task, user string) error {
+
+	task.UserId = user
+	task.State = "open" // revisar con la base de datos
+	test, errDB := getTestHQA()
+	if errDB != nil {
+		return errDB
+	}
+	task.TypeTest = test.Name                          // revisar con la base de datos
+	task.TypeTestId = test.Gid                         // revisar con la base de datos
+	task.TypeUS = "alert"                              // revisar con la base de datos
+	task.UserStory = task.Notes                        // revisar con la base de datos
+	task.Priority = 45                                 // revisar con la base de datos
+	task.Alerts = 2                                    // revisar con la base de datos
+	task.Scripts = 1                                   // revisar con la base de datos
+	task.UrlAlert = "www.google.com"                   // revisar con la base de datos
+	task.UrlScript = "http://localhost:3000/dashboard" // revisar con la base de datos
+	task.Date = time.Now().Unix()                      // revisar con la base de datosu
+	task.AddInfo = 1                                   // revisar con la base de datos
+	log.Println(task.UserId)
+	errDB = task.setUserStory()
+	if errDB != nil {
+		return errDB
+	}
+	return nil
+}
+
+func createUserStoryResultHQA(task *Task) error {
+
+	task.State = "close"
+	task.Result.Message = "Succesful"                                            // revisar con la base de datos
+	task.Result.Alert = 1                                                        // revisar con la base de
+	task.Result.UrlAlert = "http://localhost:3000/dashboard"                     // revisar con la base de datos
+	task.Result.Detail = "Aqui llegara la informacion de las pruebas realizadas" // revisar con la base de datos
+	task.Result.Script = 1                                                       // revisar con la base de datos
+	task.Result.UrlScript = "http://localhost:3000/dashboard"                    // revisar con la base de datos
+
+	errDB := task.setUserStoryResult()
+	if errDB != nil {
+		return errDB
+	}
+	return nil
 }

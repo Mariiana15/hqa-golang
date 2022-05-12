@@ -41,40 +41,50 @@ type CustomField struct {
 }
 
 type Task struct {
-	Gid         string        `json:"gid"`
-	Name        string        `json:"name"`
-	Notes       string        `json:"notes"`
-	Project     []General     `json:"projects"`
-	CustomField []CustomField `json:"custom_fields"`
-	Link        string        `json:"permalink_url"`
-	Story       []Story       `json:"stories"`
-	Dependecies []General     `json:"dependencies"`
-	State       string        `json:"state"`
-	TypeTest    string        `json:"typeTest"`
-	TypeUS      string        `json:"typeUS"`
-	UserStory   string        `json:"userStory"`
-	Priority    int           `json:"priority"`
-	Alerts      int           `json:"alerts"`
-	Scripts     int           `json:"scripts"`
-	Date        int64         `json:"date"`
-	UrlAlert    string        `json:"urlAlert"`
-	UrlScript   string        `json:"urlScript"`
-	AddInfo     bool          `json:"addInfo"`
-	Result      Result        `json:"result"`
+	Id           string        `json:"id"`
+	Hid          string        `json:"hid"`
+	Gid          string        `json:"gid"`
+	UserId       string        `json:"userId"`
+	Name         string        `json:"name"`
+	Notes        string        `json:"notes"`
+	CustomField  []CustomField `json:"custom_fields"`
+	Link         string        `json:"permalink_url"`
+	Story        []Story       `json:"stories"`
+	Dependecies  []General     `json:"dependencies"`
+	State        string        `json:"state"`
+	TypeTest     string        `json:"typeTest"`
+	TypeTestId   string        `json:"typeTestId"`
+	TypeUS       string        `json:"typeUS"`
+	UserStory    string        `json:"userStory"`
+	Priority     int           `json:"priority"`
+	Alerts       int           `json:"alerts"`
+	Scripts      int           `json:"scripts"`
+	Date         int64         `json:"date"`
+	UrlAlert     string        `json:"urlAlert"`
+	UrlScript    string        `json:"urlScript"`
+	AddInfo      int8          `json:"addInfo"`
+	Test         General       `json:"test"`
+	Result       Result        `json:"result"`
+	Tecnologies  string        `json:"technologies"`
+	Requirement  string        `json:"requirement"`
+	Architecture string        `json:"architecture"`
 }
+
 type Result struct {
 	Message   string `json:"message"`
 	Alert     int    `json:"alert"`
 	UrlAlert  string `json:"urlAlert"`
 	Detail    string `json:"detail"`
-	Script    string `json:"script"`
+	Script    int    `json:"script"`
 	UrlScript string `json:"urlScript"`
 }
 
 type Section struct {
-	Name      string `json:"name"`
-	Gid       string `json:"gid"`
-	StoryUser []Task `json:"storyUser"`
+	Name      string  `json:"name"`
+	ID        string  `json:"id"`
+	Gid       string  `json:"gid"`
+	Project   General `json:"project"`
+	StoryUser []Task  `json:"storyUser"`
 }
 
 func (asana *Asana) GetProperties() {
@@ -175,7 +185,7 @@ func StoriesAsana(token string, task string) *http.Request {
 
 func DependenciesAsana(token string, task string) *http.Request {
 
-	url := fmt.Sprintf("%v/%v/dependecies", tasks, task)
+	url := fmt.Sprintf("%v/%v/dependencies", tasks, task)
 	r, _ := http.NewRequest(http.MethodGet, url, nil)
 	r.Header.Add("Authorization", "Bearer "+token)
 	return r
@@ -197,6 +207,15 @@ func GetGeneralUnd(respuestaString string) General {
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &projects)
 	return projects
+}
+
+func GetSectionId(respuestaString string) Section {
+	var response map[string]interface{}
+	var section Section
+	json.Unmarshal([]byte(respuestaString), &response)
+	byteData, _ := json.Marshal(response["data"])
+	json.Unmarshal(byteData, &section)
+	return section
 }
 
 func GetStories(respuestaString string) []Story {

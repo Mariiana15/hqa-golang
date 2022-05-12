@@ -9,3 +9,7 @@ const msgDataCorrupt = "data corrupt"
 const stateOK = "successful"
 const stateKO = "error"
 const statePending = "pending"
+
+///
+
+const msgResponseOk = "{\"message\":\"Operation is complete\"}"
