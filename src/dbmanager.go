@@ -299,17 +299,32 @@ func (task *Task) setUserStory() error {
 func (task *Task) setUserStoryResult() error {
 
 	var db = newConnect()
-	id := uuid.NewV4().String()
-	_, err := db.Query(fmt.Sprintf("INSERT user_story_result VALUES ('%v','%v',%v,'%v','%v', %v,'%v','%v')", task.Hid, id, task.Result.Alert, task.Result.Detail, task.Result.Message, task.Result.Script, task.Result.UrlAlert, task.Result.UrlScript))
+	id := ""
+	response, err := db.Query(fmt.Sprintf("SELECT id FROM user_story_result where hid= '%v'", task.Hid))
 	if err != nil {
 		return err
 	}
-	/*log.Println(fmt.Sprintf("UPDATE user_story SET state = '%v' WHERE id = '%v';", task.State, task.Hid))
-	_, err = db.Query(fmt.Sprintf("UPDATE user_story SET state = '%v' WHERE id = '%v';", task.State, task.Hid))
+	for response.Next() {
+		response.Scan(&id)
+	}
+	log.Println(id)
+	if id == "" {
+		id = uuid.NewV4().String()
+		_, err := db.Query(fmt.Sprintf("INSERT user_story_result VALUES ('%v','%v',%v,'%v','%v', %v,'%v','%v')", task.Hid, id, task.Result.Alert, task.Result.Detail, task.Result.Message, task.Result.Script, task.Result.UrlAlert, task.Result.UrlScript))
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := db.Query(fmt.Sprintf("UPDATE user_story_result SET alert='%v', detail='%v', message='%v', script='%v', urlAlert='%v', urlScript='%v' where id='%v'", task.Result.Alert, task.Result.Detail, task.Result.Message, task.Result.Script, task.Result.UrlAlert, task.Result.UrlScript, id))
+		if err != nil {
+			return err
+		}
+	}
+	_, err = db.Query(fmt.Sprintf("UPDATE user_story SET state = '%v' WHERE id = '%v';", "close", task.Hid))
 	if err != nil {
 
 		return err
-	}*/
+	}
 	defer db.Close()
 	return nil
 }
@@ -454,6 +469,8 @@ func getUserStoryFromAsana(t *Task, tasks *[]Task) error {
 func getUserStoryResult(t *Task) error {
 
 	var db = newConnect()
+	var r Result
+	t.Result = r
 	response, err := db.Query(fmt.Sprintf("SELECT alert, detail, message, script, urlAlert, urlScript FROM user_story_result where hid= '%v'", t.Hid))
 	if err != nil {
 		return err
@@ -470,6 +487,16 @@ func getUserStoryResult(t *Task) error {
 func setInfoTech(t string, a string, r string, id string) error {
 	var db = newConnect()
 	_, err := db.Query(fmt.Sprintf("UPDATE user_story SET technologies = '%v', architecture = '%v', requirement = '%v', addInfo = %v where id = '%v'", t, a, r, 0, id))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return nil
+}
+
+func setChangeStateUserStory(c string, id string) error {
+	var db = newConnect()
+	_, err := db.Query(fmt.Sprintf("UPDATE user_story SET state = '%v' where id = '%v'", c, id))
 	if err != nil {
 		return err
 	}

@@ -29,6 +29,8 @@ func main() {
 
 	server.Handle("GET", "/hack/protocol", server.AddMiddleware(HandleProtocol, CheckAuthToken()))
 	server.Handle("POST", "/hack/us/tech", server.AddMiddleware(HandleParamsTech, CheckAuthToken()))
+	server.Handle("POST", "/hack/us/state", server.AddMiddleware(HandleChangeStateUserStory, CheckAuthToken()))
+	server.Handle("POST", "/hack/us/result", server.AddMiddleware(HandleResultUserStory, CheckAuthToken()))
 
 	server.Handle("POST", "/cars", server.AddMiddleware(CarPostRequest, CheckAuth(), CheckBodyCar(), Loggin()))
 	server.Handle("GET", "/cars/:id", server.AddMiddleware(CarGetRequest, CheckAuth(), Loggin()))

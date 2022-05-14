@@ -11,5 +11,8 @@ const stateKO = "error"
 const statePending = "pending"
 
 ///
+const msgResponseOk1 = "Operation is complete"
 
-const msgResponseOk = "{\"message\":\"Operation is complete\"}"
+type responseOk struct {
+	Message string `json:"message"`
+}

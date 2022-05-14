@@ -170,10 +170,10 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 			return nil, errTask
 		}
 
-		errTaskR := createUserStoryResultHQA(&task)
-		if errTaskR != nil {
-			return nil, errTaskR
-		}
+		/*	errTaskR := createUserStoryResultHQA(&task)
+			if errTaskR != nil {
+				return nil, errTaskR
+			}*/
 		if int(timeService)*(i+1) > timeCurrent {
 
 			timeCurrent = timeCurrent * timeCurrentSend
@@ -188,11 +188,6 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 
 	}
 	return tasks, nil
-}
-
-func createUserStory_(task Task) error {
-
-	return nil
 }
 
 func createUserStoryHQA(task *Task, user string) error {
