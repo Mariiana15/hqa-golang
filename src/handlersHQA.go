@@ -34,6 +34,32 @@ func HandleParamsTech(w http.ResponseWriter, r *http.Request) {
 	byteData, _ := json.Marshal(m)
 	w.Write(byteData)
 }
+func HandleChangeStateSection(w http.ResponseWriter, r *http.Request) {
+
+	var m responseOk
+	result, err := GetBodyResponse(r)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+		return
+	}
+	if result["state"] == nil || result["id"] == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", "Rquest no contein field 'state', 'id'")
+		return
+	}
+	err = setChangeStateSection(result["state"].(string), result["id"].(string))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	m.Message = msgResponseOk1
+	byteData, _ := json.Marshal(m)
+	w.Write(byteData)
+}
 
 func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 

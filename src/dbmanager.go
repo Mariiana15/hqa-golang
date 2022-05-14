@@ -503,3 +503,15 @@ func setChangeStateUserStory(c string, id string) error {
 	defer db.Close()
 	return nil
 }
+
+func setChangeStateSection(c string, id string) error {
+	var db = newConnect()
+	log.Println(fmt.Sprintf("UPDATE section_project SET state = '%v' where sectionId = '%v' and state='%v'", c, id, "active"))
+
+	_, err := db.Query(fmt.Sprintf("UPDATE section_project SET state = '%v' where sectionId = '%v' and state='%v'", c, id, "active"))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return nil
+}
