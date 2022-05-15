@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -25,15 +26,65 @@ func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	tokenString := ExtractToken(req)
+	acc, err2 := ExtractTokenMetadataWS(tokenString)
+	if err2 != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
+		return
+
+	}
+	code, cv, errDB := getUserCodeAsana(acc.UserId)
+	if errDB != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
+		return
+	}
+	fmt.Fprintf(w, "{\"code\": \"%v\", \"code_verifier\":\"%v\"}", code, cv)
+
+}
+
 func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	result, _ := GetBodyResponse(req)
-	code := result["code"]
-	code_verifier := result["code_verifier"]
+	code := result["code"].(string)
+	code_verifier := result["code_verifier"].(string)
+
+	tokenString := ExtractToken(req)
+	acc, err2 := ExtractTokenMetadataWS(tokenString)
+	if err2 != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
+		return
+	}
+	code2, code_verifier2, errDB := getUserCodeAsana(acc.UserId)
+	if errDB != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
+		return
+	}
+	if code2 == "" {
+		errDB := setUserCodeAsana(acc.UserId, code_verifier, code)
+		if errDB != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
+			return
+		}
+		log.Println("llego")
+	} else {
+		code = code2
+		code_verifier = code_verifier2
+	}
+	log.Println(code)
+	log.Println(code_verifier)
 	client := &http.Client{}
-	r := OauthAsana(code.(string), code_verifier.(string))
+	r := OauthAsana(code, code_verifier)
 	res, err := GetBodyResponseRequest(client, r)
+	log.Println(res)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {

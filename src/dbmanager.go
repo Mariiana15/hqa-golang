@@ -186,6 +186,37 @@ func (token *Token) deleteToken(access bool) error {
 	return nil
 }
 
+///////
+
+func setUserCodeAsana(userId string, codeVerifier string, code string) error {
+
+	var db = newConnect()
+	id := uuid.NewV4().String()
+	_, err := db.Query(fmt.Sprintf("INSERT user_code_asana VALUES ('%v','%v','%v','%v', '%v')", id, userId, codeVerifier, code, time.Now().Unix()))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return nil
+}
+
+func getUserCodeAsana(userId string) (string, string, error) {
+
+	var db = newConnect()
+	var code string
+	var code_verifier string
+
+	response, err := db.Query(fmt.Sprintf("SELECT code_verifier, code FROM user_code_asana where userId= '%v'", userId))
+	if err != nil {
+		return "", "", err
+	}
+	for response.Next() {
+		response.Scan(&code_verifier, &code)
+	}
+	defer db.Close()
+	return code, code_verifier, nil
+}
+
 /////
 
 func (section *Section) setSectionProject(Uid string) error {
@@ -307,7 +338,6 @@ func (task *Task) setUserStoryResult() error {
 	for response.Next() {
 		response.Scan(&id)
 	}
-	log.Println(id)
 	if id == "" {
 		id = uuid.NewV4().String()
 		_, err := db.Query(fmt.Sprintf("INSERT user_story_result VALUES ('%v','%v',%v,'%v','%v', %v,'%v','%v')", task.Hid, id, task.Result.Alert, task.Result.Detail, task.Result.Message, task.Result.Script, task.Result.UrlAlert, task.Result.UrlScript))
@@ -506,7 +536,6 @@ func setChangeStateUserStory(c string, id string) error {
 
 func setChangeStateSection(c string, id string) error {
 	var db = newConnect()
-	log.Println(fmt.Sprintf("UPDATE section_project SET state = '%v' where sectionId = '%v' and state='%v'", c, id, "active"))
 
 	_, err := db.Query(fmt.Sprintf("UPDATE section_project SET state = '%v' where sectionId = '%v' and state='%v'", c, id, "active"))
 	if err != nil {

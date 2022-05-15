@@ -13,6 +13,8 @@ func main() {
 
 	//server.Handle("GET", "/app", server.AddMiddleware(HandleRoot2, CheckAuthWebSocket()))
 	server.Handle("GET", "/asana/code", server.AddMiddleware(HandleAsanaCode, CheckAuthToken()))
+	server.Handle("GET", "/asana/code/v1", server.AddMiddleware(HandleAsanaCodeDB, CheckAuthToken()))
+
 	server.Handle("GET", "/asana/projects", server.AddMiddleware(HandleAsanaProjects, CheckAuthToken()))
 	server.Handle("GET", "/asana/sections", server.AddMiddleware(HandleAsanaSections, CheckAuthToken()))
 	server.Handle("GET", "/asana/sections/:id", server.AddMiddleware(HandleAsanaSections, CheckAuthToken()))
