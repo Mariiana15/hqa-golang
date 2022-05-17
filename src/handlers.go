@@ -55,32 +55,13 @@ func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 	code_verifier := result["code_verifier"].(string)
 
 	tokenString := ExtractToken(req)
-	acc, err2 := ExtractTokenMetadataWS(tokenString)
+	_, err2 := ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
 		return
 	}
-	code2, code_verifier2, errDB := getUserCodeAsana(acc.UserId)
-	if errDB != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
-		return
-	}
-	if code2 == "" {
-		errDB := setUserCodeAsana(acc.UserId, code_verifier, code)
-		if errDB != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
-			return
-		}
-		log.Println("llego")
-	} else {
-		code = code2
-		code_verifier = code_verifier2
-	}
-	log.Println(code)
-	log.Println(code_verifier)
+
 	client := &http.Client{}
 	r := OauthAsana(code, code_verifier)
 	res, err := GetBodyResponseRequest(client, r)

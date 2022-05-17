@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -81,6 +82,15 @@ func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
 		return
 	}
+	var t Task
+	t.Hid = result["id"].(string)
+	errTaskR := createUserStoryResultHQA(&t)
+	if errTaskR != nil {
+		log.Println(errTaskR)
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", errTaskR.Error())
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 	m.Message = msgResponseOk1
@@ -114,4 +124,25 @@ func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 	m.Message = msgResponseOk1
 	byteData, _ = json.Marshal(m)
 	w.Write(byteData)
+}
+
+func HandleGetValidateUStory(w http.ResponseWriter, r *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	tokenString := ExtractToken(r)
+	acc, err2 := ExtractTokenMetadataWS(tokenString)
+	if err2 != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
+		return
+
+	}
+	var s []Section
+	errDB := getSectionDB(acc.UserId, &s)
+	if errDB != nil || len(s) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
+		return
+	}
+	fmt.Fprintf(w, "{\"message\": \"%v\"}", "It is synchronized")
 }

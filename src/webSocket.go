@@ -170,10 +170,10 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 			return nil, errTask
 		}
 
-		/*	errTaskR := createUserStoryResultHQA(&task)
-			if errTaskR != nil {
-				return nil, errTaskR
-			}*/
+		/*errTaskR := createUserStoryResultHQA(&task)
+		if errTaskR != nil {
+			return nil, errTaskR
+		}*/
 		if int(timeService)*(i+1) > timeCurrent {
 
 			timeCurrent = timeCurrent * timeCurrentSend
@@ -219,7 +219,7 @@ func createUserStoryHQA(task *Task, user string) error {
 
 func createUserStoryResultHQA(task *Task) error {
 
-	task.State = "close"
+	//task.State = "close"
 	task.Result.Message = "Succesful"                                            // revisar con la base de datos
 	task.Result.Alert = 1                                                        // revisar con la base de
 	task.Result.UrlAlert = "http://localhost:3000/dashboard"                     // revisar con la base de datos
