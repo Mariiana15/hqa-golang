@@ -1,5 +1,11 @@
 github.com/Mariiana15/WebSocket v1.0.0 h1:vT/v3ffZs4OFFznP5XRvdSPLw1bfk8Bxa/fYoQJlzEA=
 github.com/Mariiana15/WebSocket v1.0.0/go.mod h1:sNMVbe6gbXuqbb7qbre7EIXXHUEWu1+2znPegIPltOc=
+github.com/Mariiana15/apis v1.0.3 h1:m+xaDxCdOSKrzpXsI1c+Hub8SfX+AbnYoeHp1rS7sP4=
+github.com/Mariiana15/apis v1.0.3/go.mod h1:3qpfMsSX++nFY+NO3IbFrSIQDOLQzcu11DuvIJf8vUA=
+github.com/Mariiana15/dbmanager v1.0.18 h1:qteiV0mYFKX9cqQ1huWpD6YpC6hMF/B/7DMcyPZq/VY=
+github.com/Mariiana15/dbmanager v1.0.18/go.mod h1:byKh+AhDOIX0iQPRrvU6/o5lDth7ygSgzgfeSqXMPT0=
+github.com/Mariiana15/serverutils v1.0.8 h1:XYPaCNpYKnifDOrRhlpx/gA6hBEQOvnv2jlZYvHiB+k=
+github.com/Mariiana15/serverutils v1.0.8/go.mod h1:0ZjqnBFOVpJ9UqgmkQH22vz41VM0LWbfGr2VqaK84ns=
 github.com/averageflow/gohooks v1.0.9 h1:2CdFKty9L+kQCP3ZTSFIwqMTJHZvYERs1v6mCYZMwaY=
 github.com/averageflow/gohooks v1.0.9/go.mod h1:97sQ0qBi1BbakYRPRi/VF9QZbtT+dafuMhzXxuHRkVE=
 github.com/averageflow/gohooks/v2 v2.1.0 h1:6QpwoQldPLAXThPQgGC2pIp/VxFkpRyqlNLfp6Kdp7U=
