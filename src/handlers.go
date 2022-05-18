@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Mariiana15/apis"
 	"github.com/Mariiana15/dbmanager"
+	"github.com/Mariiana15/serverutils"
 )
 
 func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
@@ -16,9 +18,9 @@ func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
 func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	var asana Asana
+	var asana apis.Asana
 	asana.GetProperties()
-	m, err := GetCode(asana)
+	m, err := apis.GetCode(asana)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
@@ -31,8 +33,8 @@ func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	tokenString := ExtractToken(req)
-	acc, err2 := ExtractTokenMetadataWS(tokenString)
+	tokenString := serverutils.ExtractToken(req)
+	acc, err2 := serverutils.ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
@@ -52,12 +54,12 @@ func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
 func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	result, _ := GetBodyResponse(req)
+	result, _ := serverutils.GetBodyResponse(req)
 	code := result["code"].(string)
 	code_verifier := result["code_verifier"].(string)
 
-	tokenString := ExtractToken(req)
-	_, err2 := ExtractTokenMetadataWS(tokenString)
+	tokenString := serverutils.ExtractToken(req)
+	_, err2 := serverutils.ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
@@ -65,8 +67,8 @@ func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 	}
 
 	client := &http.Client{}
-	r := OauthAsana(code, code_verifier)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.OauthAsana(code, code_verifier)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	log.Println(res)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
@@ -83,12 +85,12 @@ func HandleAsanaProjects(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	client := &http.Client{}
 	token := req.Header.Get("token")
-	r := ProjectsAsana(token)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.ProjectsAsana(token)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetGeneral(res)
+		elements := apis.GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -103,12 +105,12 @@ func HandleAsanaSections(w http.ResponseWriter, req *http.Request) {
 	client := &http.Client{}
 	token := req.Header.Get("token")
 	project := req.Header.Get("projectId")
-	r := SectionsAsana(token, project)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.SectionsAsana(token, project)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetGeneral(res)
+		elements := apis.GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -124,12 +126,12 @@ func HandleAsanaSectionsId(w http.ResponseWriter, req *http.Request) {
 	client := &http.Client{}
 	token := req.Header.Get("token")
 	section := req.Header.Get("id")
-	r := SectionsAsanaId(token, section)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.SectionsAsanaId(token, section)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetGeneral(res)
+		elements := apis.GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -149,31 +151,31 @@ func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, ele
 		r2 := make(chan *http.Request)
 		r3 := make(chan *http.Request)
 
-		go getTaskAsync("task", token, elements[i].Gid, r)
-		go getTaskAsync("stories", token, elements[i].Gid, r2)
-		go getTaskAsync("dependencies", token, elements[i].Gid, r3)
+		go apis.GetTaskAsync("task", token, elements[i].Gid, r)
+		go apis.GetTaskAsync("stories", token, elements[i].Gid, r2)
+		go apis.GetTaskAsync("dependencies", token, elements[i].Gid, r3)
 
 		rr := <-r
-		res, err := GetBodyResponseRequest(client, rr)
+		res, err := serverutils.GetBodyResponseRequest(client, rr)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		task = GetTask(res)
+		task = apis.GetTask(res)
 
 		rr2 := <-r2
-		res2, err := GetBodyResponseRequest(client, rr2)
+		res2, err := serverutils.GetBodyResponseRequest(client, rr2)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		elements_ := GetStoriesFilter(res2, "comment")
+		elements_ := apis.GetStoriesFilter(res2, "comment")
 		task.Story = elements_
 
 		rr3 := <-r3
-		res3, err := GetBodyResponseRequest(client, rr3)
+		res3, err := serverutils.GetBodyResponseRequest(client, rr3)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		elements_dep := GetGeneral(res3)
+		elements_dep := apis.GetGeneral(res3)
 		task.Dependecies = elements_dep
 		tasks = append(tasks, task)
 	}
@@ -186,12 +188,12 @@ func HandleAsanaSectionsTasks(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r, t := TaskSectionAsana(token, section)
-	res, err := GetBodyResponseRequest(client, r)
+	r, t := apis.TaskSectionAsana(token, section)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	}
-	elements := GetGeneral(res)
+	elements := apis.GetGeneral(res)
 	if len(elements) > 0 {
 		fmt.Fprintf(w, "{\"tasks\":\"%v\",\"timeAsync\":\"%v\"}", len(elements), t)
 		HandleAsanaSectionsTasksAsync(w, req, elements, token, section)
@@ -206,12 +208,12 @@ func HandleAsanaTasks(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r, _ := TaskSectionAsana(token, section)
-	res, err := GetBodyResponseRequest(client, r)
+	r, _ := apis.TaskSectionAsana(token, section)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetGeneral(res)
+		elements := apis.GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -226,12 +228,12 @@ func HandleAsanaTasksId(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := TaskAsana(token, task)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.TaskAsana(token, task)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		json.NewEncoder(w).Encode(GetTask(res))
+		json.NewEncoder(w).Encode(apis.GetTask(res))
 	}
 }
 
@@ -241,12 +243,12 @@ func HandleAsanaTasksIdStories(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := StoriesAsana(token, task)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.StoriesAsana(token, task)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetStoriesFilter(res, "comment")
+		elements := apis.GetStoriesFilter(res, "comment")
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -261,12 +263,12 @@ func HandleAsanaTasksIdDependencies(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := DependenciesAsana(token, task)
-	res, err := GetBodyResponseRequest(client, r)
+	r := apis.DependenciesAsana(token, task)
+	res, err := serverutils.GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := GetGeneral(res)
+		elements := apis.GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -288,7 +290,7 @@ func CarPostRequest(write_ http.ResponseWriter, req *http.Request) {
 	err = dbmanager.InsertDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgDatabase)
 		return
 	}
 	responseCarBody(&car, write_)
@@ -300,7 +302,7 @@ func CarGetRequest(write_ http.ResponseWriter, req *http.Request) {
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgNotFound)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgNotFound)
 		return
 	}
 	write_.WriteHeader(http.StatusOK)
@@ -313,26 +315,26 @@ func CarDeleteRequest(write_ http.ResponseWriter, req *http.Request) {
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgNotFound)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgNotFound)
 		return
 	}
 	err = dbmanager.DeleteDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgDatabase)
 		return
 	}
 	write_.WriteHeader(http.StatusNonAuthoritativeInfo)
 	responseCarBody(&car, write_)
 }
 
-func responseCarBody(car_ *dbmanager.Car, write_ http.ResponseWriter) {
-	/*
-		response, err := car.ToJson()
-		if err != nil {
-			write_.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgMalFormat)
-			return
-		}
-		write_.Write(response)*/
+func responseCarBody(car *dbmanager.Car, write_ http.ResponseWriter) {
+
+	response, err := car.ToJson()
+	if err != nil {
+		write_.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgMalFormat)
+		return
+	}
+	write_.Write(response)
 }

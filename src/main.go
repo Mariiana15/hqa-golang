@@ -1,6 +1,11 @@
 package main
 
-import "os"
+import (
+	"os"
+
+	"github.com/Mariiana15/apis"
+	"github.com/Mariiana15/serverutils"
+)
 
 func main() {
 
@@ -9,7 +14,7 @@ func main() {
 
 	server := NewServer(":8081")
 	server.Handle("GET", "/", HandleRoot)
-	server.Handle("GET", "/app", HandleWebSocket)
+	server.Handle("GET", "/app", apis.HandleWebSocket)
 
 	//server.Handle("GET", "/app", server.AddMiddleware(HandleRoot2, CheckAuthWebSocket()))
 	server.Handle("GET", "/asana/code", server.AddMiddleware(HandleAsanaCode, CheckAuthToken()))
@@ -25,11 +30,11 @@ func main() {
 	server.Handle("GET", "/asana/sections/tasks", server.AddMiddleware(HandleAsanaSectionsTasks, CheckAuthToken()))
 	server.Handle("POST", "/asana/oauth", server.AddMiddleware(HandleAsanaOauth, CheckAuthToken()))
 
-	server.Handle("POST", "/login", server.AddMiddleware(HandleLogin, HandlerResponse()))
-	server.Handle("POST", "/token/refresh", server.AddMiddleware(HandleRefresh, HandlerResponse()))
-	server.Handle("POST", "/token/logout", server.AddMiddleware(HandleLogOut, CheckAuthToken()))
+	server.Handle("POST", "/login", server.AddMiddleware(serverutils.HandleLogin, HandlerResponse()))
+	server.Handle("POST", "/token/refresh", server.AddMiddleware(serverutils.HandleRefresh, HandlerResponse()))
+	server.Handle("POST", "/token/logout", server.AddMiddleware(serverutils.HandleLogOut, CheckAuthToken()))
 
-	server.Handle("GET", "/hack/protocol", server.AddMiddleware(HandleProtocol, CheckAuthToken()))
+	server.Handle("GET", "/hack/protocol", server.AddMiddleware(apis.HandleProtocol, CheckAuthToken()))
 	server.Handle("POST", "/hack/us/tech", server.AddMiddleware(HandleParamsTech, CheckAuthToken()))
 	server.Handle("POST", "/hack/us/state", server.AddMiddleware(HandleChangeStateUserStory, CheckAuthToken()))
 	server.Handle("POST", "/hack/us/section/state", server.AddMiddleware(HandleChangeStateSection, CheckAuthToken()))
