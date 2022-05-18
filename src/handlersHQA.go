@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/Mariiana15/dbmanager"
 )
 
 func HandleParamsTech(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +25,7 @@ func HandleParamsTech(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = setInfoTech(result["technologies"].(string), result["architecture"].(string), result["requirement"].(string), result["id"].(string))
+	err = dbmanager.SetInfoTech(result["technologies"].(string), result["architecture"].(string), result["requirement"].(string), result["id"].(string))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -49,7 +51,7 @@ func HandleChangeStateSection(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", "Rquest no contein field 'state', 'id'")
 		return
 	}
-	err = setChangeStateSection(result["state"].(string), result["id"].(string))
+	err = dbmanager.SetChangeStateSection(result["state"].(string), result["id"].(string))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -76,13 +78,13 @@ func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", "Rquest no contein field 'state', 'id'")
 		return
 	}
-	err = setChangeStateUserStory(result["state"].(string), result["id"].(string))
+	err = dbmanager.SetChangeStateUserStory(result["state"].(string), result["id"].(string))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
 		return
 	}
-	var t Task
+	var t dbmanager.Task
 	t.Hid = result["id"].(string)
 	errTaskR := createUserStoryResultHQA(&t)
 	if errTaskR != nil {
@@ -100,8 +102,8 @@ func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 
 func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 
-	var t Task
-	var res Result
+	var t dbmanager.Task
+	var res dbmanager.Result
 	var m responseOk
 
 	body, err := GetBodyResponse(r)
@@ -114,7 +116,7 @@ func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 	byteData, _ := json.Marshal(body)
 	json.Unmarshal(byteData, &res)
 	t.Result = res
-	errDB := t.setUserStoryResult()
+	errDB := t.SetUserStoryResult()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB.Error())
@@ -137,8 +139,8 @@ func HandleGetValidateUStory(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	var s []Section
-	errDB := getSectionDB(acc.UserId, &s)
+	var s []dbmanager.Section
+	errDB := dbmanager.GetSectionDB(acc.UserId, &s)
 	if errDB != nil || len(s) == 0 {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)

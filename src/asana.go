@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/Mariiana15/dbmanager"
 )
 
 var oautCodehUrl = "https://app.asana.com/-/oauth_authorize?"
@@ -21,70 +23,6 @@ type Asana struct {
 	ClientSecret  string `json:"clientSecrect"`
 	RedirectUri   string `json:"redirect_uri"`
 	TimeAsyncTask int16  `json:"timeAsyncTask"`
-}
-
-type General struct {
-	Gid  string `json:"gid"`
-	Name string `json:"name"`
-}
-
-type Story struct {
-	Gid  string `json:"gid"`
-	Type string `json:"type"`
-	Text string `json:"text"`
-}
-
-type CustomField struct {
-	Gid   string `json:"gid"`
-	Name  string `json:"name"`
-	Value string `json:"display_value"`
-}
-
-type Task struct {
-	Id           string        `json:"id"`
-	Hid          string        `json:"hid"`
-	Gid          string        `json:"gid"`
-	UserId       string        `json:"userId"`
-	Name         string        `json:"name"`
-	Notes        string        `json:"notes"`
-	CustomField  []CustomField `json:"custom_fields"`
-	Link         string        `json:"permalink_url"`
-	Story        []Story       `json:"stories"`
-	Dependecies  []General     `json:"dependencies"`
-	State        string        `json:"state"`
-	TypeTest     string        `json:"typeTest"`
-	TypeTestId   string        `json:"typeTestId"`
-	TypeUS       string        `json:"typeUS"`
-	UserStory    string        `json:"userStory"`
-	Priority     int           `json:"priority"`
-	Alerts       int           `json:"alerts"`
-	Scripts      int           `json:"scripts"`
-	Date         int64         `json:"date"`
-	UrlAlert     string        `json:"urlAlert"`
-	UrlScript    string        `json:"urlScript"`
-	AddInfo      int8          `json:"addInfo"`
-	Test         General       `json:"test"`
-	Result       Result        `json:"result"`
-	Tecnologies  string        `json:"technologies"`
-	Requirement  string        `json:"requirement"`
-	Architecture string        `json:"architecture"`
-}
-
-type Result struct {
-	Message   string `json:"message"`
-	Alert     int    `json:"alert"`
-	UrlAlert  string `json:"urlAlert"`
-	Detail    string `json:"detail"`
-	Script    int    `json:"script"`
-	UrlScript string `json:"urlScript"`
-}
-
-type Section struct {
-	Name      string  `json:"name"`
-	ID        string  `json:"id"`
-	Gid       string  `json:"gid"`
-	Project   General `json:"project"`
-	StoryUser []Task  `json:"storyUser"`
 }
 
 func (asana *Asana) GetProperties() {
@@ -191,46 +129,46 @@ func DependenciesAsana(token string, task string) *http.Request {
 	return r
 }
 
-func GetGeneral(respuestaString string) []General {
+func GetGeneral(respuestaString string) []dbmanager.General {
 	var response map[string]interface{}
-	var projects []General
+	var projects []dbmanager.General
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &projects)
 	return projects
 }
 
-func GetGeneralUnd(respuestaString string) General {
+func GetGeneralUnd(respuestaString string) dbmanager.General {
 	var response map[string]interface{}
-	var projects General
+	var projects dbmanager.General
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &projects)
 	return projects
 }
 
-func GetSectionId(respuestaString string) Section {
+func GetSectionId(respuestaString string) dbmanager.Section {
 	var response map[string]interface{}
-	var section Section
+	var section dbmanager.Section
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &section)
 	return section
 }
 
-func GetStories(respuestaString string) []Story {
+func GetStories(respuestaString string) []dbmanager.Story {
 	var response map[string]interface{}
-	var story []Story
+	var story []dbmanager.Story
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &story)
 	return story
 }
 
-func GetStoriesFilter(respuestaString string, value string) []Story {
+func GetStoriesFilter(respuestaString string, value string) []dbmanager.Story {
 	var response map[string]interface{}
-	var story []Story
-	var storyResponse []Story
+	var story []dbmanager.Story
+	var storyResponse []dbmanager.Story
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 
@@ -243,9 +181,9 @@ func GetStoriesFilter(respuestaString string, value string) []Story {
 	return storyResponse
 }
 
-func GetTask(respuestaString string) Task {
+func GetTask(respuestaString string) dbmanager.Task {
 	var response map[string]interface{}
-	var tasks Task
+	var tasks dbmanager.Task
 	json.Unmarshal([]byte(respuestaString), &response)
 	byteData, _ := json.Marshal(response["data"])
 	json.Unmarshal(byteData, &tasks)

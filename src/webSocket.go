@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Mariiana15/dbmanager"
 	"github.com/gorilla/websocket"
 	uuid "github.com/satori/go.uuid"
 )
@@ -44,7 +45,7 @@ func Dispatcher(ws *websocket.Conn, m Message) {
 
 ////
 
-func getTaskSection(client *http.Client, m Message) ([]General, int16, error) {
+func getTaskSection(client *http.Client, m Message) ([]dbmanager.General, int16, error) {
 
 	r, t := TaskSectionAsana(m.Message.Token, m.Message.ObjectId)
 	res, err := GetBodyResponseRequest(client, r)
@@ -55,11 +56,11 @@ func getTaskSection(client *http.Client, m Message) ([]General, int16, error) {
 	return elements, t, nil
 }
 
-func getSection(client *http.Client, m Message) (Section, error) {
+func getSection(client *http.Client, m Message) (dbmanager.Section, error) {
 
 	r := SectionsAsanaId(m.Message.Token, m.Message.ObjectId)
 	res, err := GetBodyResponseRequest(client, r)
-	var sectionId Section
+	var sectionId dbmanager.Section
 
 	if err != nil {
 		return sectionId, err
@@ -70,8 +71,8 @@ func getSection(client *http.Client, m Message) (Section, error) {
 
 func handelGeteSectionTask(ws *websocket.Conn, m Message) {
 
-	var sections []Section
-	errDB := getUserStoriesComplete(&sections, m.User)
+	var sections []dbmanager.Section
+	errDB := dbmanager.GetUserStoriesComplete(&sections, m.User)
 	if errDB != nil {
 		handlerExceptionWS(ws, errDB.Error(), stateKO)
 		ws.Close()
@@ -83,7 +84,7 @@ func handelGeteSectionTask(ws *websocket.Conn, m Message) {
 
 func handelCreateSectionTask(ws *websocket.Conn, m Message) {
 
-	var sections []Section
+	var sections []dbmanager.Section
 	client := &http.Client{}
 	elements, t, _ := getTaskSection(client, m)
 	sectionId, _ := getSection(client, m)
@@ -99,7 +100,7 @@ func handelCreateSectionTask(ws *websocket.Conn, m Message) {
 		}
 		sectionId.StoryUser = tasks
 	}
-	errDB := sectionId.setSectionProject(m.User)
+	errDB := sectionId.SetSectionProject(m.User)
 	if errDB != nil {
 		handlerExceptionWS(ws, errDB.Error(), stateKO)
 		ws.Close()
@@ -110,15 +111,15 @@ func handelCreateSectionTask(ws *websocket.Conn, m Message) {
 	ws.Close()
 }
 
-func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, elements []General, token string, sectionObj *Section, timeService int16, sectionList []Section, user string) ([]Task, error) {
+func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, elements []dbmanager.General, token string, sectionObj *dbmanager.Section, timeService int16, sectionList []dbmanager.Section, user string) ([]dbmanager.Task, error) {
 
-	var tasks []Task
+	var tasks []dbmanager.Task
 	timeCurrent := 3000
 	timeCurrentSend := 1
 
 	for i := 0; i <= len(elements)-1; i++ {
 
-		var task Task
+		var task dbmanager.Task
 		rt := make(chan *http.Request)
 		rs := make(chan *http.Request)
 		rd := make(chan *http.Request)
@@ -133,11 +134,11 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 			return nil, err
 		}
 		task = GetTask(res)
-		errDB := task.setUserStoryAsana(sectionObj.ID)
+		errDB := task.SetUserStoryAsana(sectionObj.ID)
 		if errDB != nil {
 			return nil, err
 		}
-		errDB = task.setUserStoryAsanaCField()
+		errDB = task.SetUserStoryAsanaCField()
 		if errDB != nil {
 			return nil, err
 		}
@@ -149,7 +150,7 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 		}
 		elements_ := GetStoriesFilter(resSt, "comment")
 		task.Story = elements_
-		errDB = task.setUserStoryAsanaStories()
+		errDB = task.SetUserStoryAsanaStories()
 		if errDB != nil {
 			return nil, err
 		}
@@ -161,7 +162,7 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 		}
 		elements_dep := GetGeneral(resDep)
 		task.Dependecies = elements_dep
-		errDB = task.setUserStoryAsanaDependence()
+		errDB = task.SetUserStoryAsanaDependence()
 		if errDB != nil {
 			return nil, err
 		}
@@ -190,11 +191,11 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 	return tasks, nil
 }
 
-func createUserStoryHQA(task *Task, user string) error {
+func createUserStoryHQA(task *dbmanager.Task, user string) error {
 
 	task.UserId = user
 	task.State = "open" // revisar con la base de datos
-	test, errDB := getTestHQA()
+	test, errDB := dbmanager.GetTestHQA()
 	if errDB != nil {
 		return errDB
 	}
@@ -210,14 +211,14 @@ func createUserStoryHQA(task *Task, user string) error {
 	task.Date = time.Now().Unix()                      // revisar con la base de datosu
 	task.AddInfo = 1                                   // revisar con la base de datos
 	log.Println(task.UserId)
-	errDB = task.setUserStory()
+	errDB = task.SetUserStory()
 	if errDB != nil {
 		return errDB
 	}
 	return nil
 }
 
-func createUserStoryResultHQA(task *Task) error {
+func createUserStoryResultHQA(task *dbmanager.Task) error {
 
 	//task.State = "close"
 	task.Result.Message = "Succesful"                                            // revisar con la base de datos
@@ -227,7 +228,7 @@ func createUserStoryResultHQA(task *Task) error {
 	task.Result.Script = 1                                                       // revisar con la base de datos
 	task.Result.UrlScript = "http://localhost:3000/dashboard"                    // revisar con la base de datos
 
-	errDB := task.setUserStoryResult()
+	errDB := task.SetUserStoryResult()
 	if errDB != nil {
 		return errDB
 	}

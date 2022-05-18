@@ -10,23 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Mariiana15/dbmanager"
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
 )
-
-type Auth struct {
-	User string `json:"user"`
-	Pass string `json:"pass"`
-	Id   string `json:"id"`
-}
-
-type Token struct {
-	UserId   string `json:"userId"`
-	Token    string `json:"token"`
-	Id       string `json:"id"`
-	ExpireAt int64  `json:"expireAt"`
-	State    string `json:"state"`
-}
 
 type UserHQA struct {
 	ID       uint64 `json:"id"`
@@ -81,11 +68,11 @@ func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
 	if err != nil {
 		return nil, err
 	}
-	var token Token
+	var token dbmanager.Token
 	token.ExpireAt = td.AtExpires
 	token.UserId = userId
 	token.Token = td.AccessToken
-	token.insert(true, typeToken)
+	token.Insert(true, typeToken)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +90,7 @@ func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
 	}
 	token.ExpireAt = td.RtExpires
 	token.Token = td.RefreshToken
-	token.insert(false, typeToken)
+	token.Insert(false, typeToken)
 	if err != nil {
 		return nil, err
 	}
@@ -113,9 +100,9 @@ func CreateToken(userId string, typeToken bool) (*TokenDetails, error) {
 
 func CreateAuth(userid string) error {
 
-	var token Token
+	var token dbmanager.Token
 	token.UserId = userid
-	err := token.getToken(false)
+	err := token.GetToken(false)
 	if err != nil {
 		return err
 	}
@@ -164,9 +151,9 @@ func TokenValid(r *http.Request) error {
 	}
 	claims, ok2 := token.Claims.(jwt.MapClaims)
 	if ok2 && token.Valid {
-		var token_ Token
+		var token_ dbmanager.Token
 		token_.UserId = claims["user_id"].(string)
-		errAu := token_.getToken(true)
+		errAu := token_.GetToken(true)
 		if errAu != nil {
 			log.Println(errAu)
 			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
@@ -194,9 +181,9 @@ func TokenValidWS(tokenString string) error {
 	}
 	claims, ok2 := token.Claims.(jwt.MapClaims)
 	if ok2 && token.Valid {
-		var token_ Token
+		var token_ dbmanager.Token
 		token_.UserId = claims["user_id"].(string)
-		errAu := token_.getToken(true)
+		errAu := token_.GetToken(true)
 		if errAu != nil {
 			log.Println(errAu)
 			return fmt.Errorf("{\"error\": \"%v\"}", msgUnauthorized)
@@ -268,10 +255,10 @@ func ExtractTokenMetadata(r *http.Request) (*AccessDetails, error) {
 	return nil, err
 }
 
-func GetUserHQA(req *http.Request) (Auth, string) {
+func GetUserHQA(req *http.Request) (dbmanager.Auth, string) {
 
 	var user UserIntro
-	var auth Auth
+	var auth dbmanager.Auth
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		return auth, fmt.Sprintf("{\"error\": \"%v\"}", err.Error())
@@ -281,7 +268,7 @@ func GetUserHQA(req *http.Request) (Auth, string) {
 	if err != nil {
 		return auth, fmt.Sprintf("{\"error\": \"%v\"}", err.Error())
 	}
-	err = auth.getUserBasic(user.ID, user.Email)
+	err = auth.GetUserBasic(user.ID, user.Email)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -400,9 +387,9 @@ func HandleLogOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var token Token
+	var token dbmanager.Token
 	token.Id = au.AccessUuid
-	deleteErr := token.deleteToken(true)
+	deleteErr := token.DeleteToken(true)
 	if deleteErr != nil { //if any goes wrong
 		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", msgUnauthorized)

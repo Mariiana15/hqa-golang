@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/Mariiana15/dbmanager"
 )
 
 func CheckAuthWebSocket() Middleware {
@@ -88,8 +90,8 @@ func HandlerResponse() Middleware {
 	}
 }
 func validateBasic(write_ http.ResponseWriter, username, password string) bool {
-	var auth Auth
-	err := auth.getUserBasic("0", "x")
+	var auth dbmanager.Auth
+	err := auth.GetUserBasic("0", "x")
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)

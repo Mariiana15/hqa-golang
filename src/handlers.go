@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/Mariiana15/dbmanager"
 )
 
 func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
@@ -37,7 +39,7 @@ func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
 		return
 
 	}
-	code, cv, errDB := getUserCodeAsana(acc.UserId)
+	code, cv, errDB := dbmanager.GetUserCodeAsana(acc.UserId)
 	if errDB != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", errDB)
@@ -137,12 +139,12 @@ func HandleAsanaSectionsId(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, elements []General, token string, section string) {
+func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, elements []dbmanager.General, token string, section string) {
 
 	client := &http.Client{}
-	var tasks []Task
+	var tasks []dbmanager.Task
 	for i := len(elements) - 1; i >= 0; i-- {
-		var task Task
+		var task dbmanager.Task
 		r := make(chan *http.Request)
 		r2 := make(chan *http.Request)
 		r3 := make(chan *http.Request)
@@ -274,7 +276,7 @@ func HandleAsanaTasksIdDependencies(w http.ResponseWriter, req *http.Request) {
 }
 
 func CarPostRequest(write_ http.ResponseWriter, req *http.Request) {
-	var car Car
+	var car dbmanager.Car
 	decoder := json.NewDecoder(req.Body)
 	err := decoder.Decode(&car)
 	write_.Header().Set("Content-Type", "application/json")
@@ -283,7 +285,7 @@ func CarPostRequest(write_ http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", err)
 		return
 	}
-	err = insertDB(&car)
+	err = dbmanager.InsertDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)
@@ -293,8 +295,8 @@ func CarPostRequest(write_ http.ResponseWriter, req *http.Request) {
 }
 
 func CarGetRequest(write_ http.ResponseWriter, req *http.Request) {
-	var car Car
-	err := getDB(&car, req.Header.Get("id"))
+	var car dbmanager.Car
+	err := dbmanager.GetDB(&car, req.Header.Get("id"))
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
@@ -306,15 +308,15 @@ func CarGetRequest(write_ http.ResponseWriter, req *http.Request) {
 }
 
 func CarDeleteRequest(write_ http.ResponseWriter, req *http.Request) {
-	var car Car
-	err := getDB(&car, req.Header.Get("id"))
+	var car dbmanager.Car
+	err := dbmanager.GetDB(&car, req.Header.Get("id"))
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgNotFound)
 		return
 	}
-	err = deleteDB(&car)
+	err = dbmanager.DeleteDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgDatabase)
@@ -324,12 +326,13 @@ func CarDeleteRequest(write_ http.ResponseWriter, req *http.Request) {
 	responseCarBody(&car, write_)
 }
 
-func responseCarBody(car *Car, write_ http.ResponseWriter) {
-	response, err := car.ToJson()
-	if err != nil {
-		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgMalFormat)
-		return
-	}
-	write_.Write(response)
+func responseCarBody(car_ *dbmanager.Car, write_ http.ResponseWriter) {
+	/*
+		response, err := car.ToJson()
+		if err != nil {
+			write_.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(write_, "{\"error\": \"%v\"}", msgMalFormat)
+			return
+		}
+		write_.Write(response)*/
 }
