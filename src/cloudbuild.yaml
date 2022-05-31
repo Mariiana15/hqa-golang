@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/k8s-skaffold/pack
+    entrypoint: pack
+    args:
+      - build
+      - hqa-golang
+      - --builder=gcr.io/buildpacks/builder
+      - --buildpack=google.go.runtime@0.9.1
+      - --buildpack=google.go.build@0.9.0
+      - --buildpack=google.utils.label@0.0.1
+      # - --buildpack=cage1016/jq-cnb@1.1.0 # uncomment will get invalid cross-device link error message
