@@ -12,7 +12,7 @@ func main() {
 	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd")
 	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf")
 
-	server := NewServer(":8081")
+	server := NewServer(":8080")
 	server.Handle("GET", "/", HandleRoot)
 	server.Handle("GET", "/app", apis.HandleWebSocket)
 
