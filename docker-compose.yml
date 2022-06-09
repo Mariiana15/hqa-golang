@@ -32,7 +32,8 @@ services:
     networks: 
       entrust_net:
         aliases: 
-          - mariadb_host          
+          - mariadb_host
+          
 
 networks:
   entrust_net:
