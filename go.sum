@@ -1,7 +1,7 @@
 github.com/Mariiana15/apis v1.0.3 h1:m+xaDxCdOSKrzpXsI1c+Hub8SfX+AbnYoeHp1rS7sP4=
 github.com/Mariiana15/apis v1.0.3/go.mod h1:3qpfMsSX++nFY+NO3IbFrSIQDOLQzcu11DuvIJf8vUA=
-github.com/Mariiana15/dbmanager v1.0.19 h1:qteiV0mYFKX9cqQ1huWpD6YpC6hMF/B/7DMcyPZq/VY=
-github.com/Mariiana15/dbmanager v1.0.19/go.mod h1:byKh+AhDOIX0iQPRrvU6/o5lDth7ygSgzgfeSqXMPT0=
+github.com/Mariiana15/dbmanager v1.0.21 h1:PVdCZUhfCPEbRw2zPd0k+TpQrZ69SlFOLUKYD65JPvY=
+github.com/Mariiana15/dbmanager v1.0.21/go.mod h1:byKh+AhDOIX0iQPRrvU6/o5lDth7ygSgzgfeSqXMPT0=
 github.com/Mariiana15/serverutils v1.0.8 h1:XYPaCNpYKnifDOrRhlpx/gA6hBEQOvnv2jlZYvHiB+k=
 github.com/Mariiana15/serverutils v1.0.8/go.mod h1:0ZjqnBFOVpJ9UqgmkQH22vz41VM0LWbfGr2VqaK84ns=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
