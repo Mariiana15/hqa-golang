@@ -14,6 +14,7 @@ func main() {
 
 	server := NewServer(":8080")
 	server.Handle("GET", "/", HandleRoot)
+	server.Handle("GET", "/health", HandleRoot)
 	server.Handle("GET", "/app", apis.HandleWebSocket)
 
 	//server.Handle("GET", "/app", server.AddMiddleware(HandleRoot2, CheckAuthWebSocket()))
