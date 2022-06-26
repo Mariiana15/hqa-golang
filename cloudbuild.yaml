@@ -29,6 +29,7 @@ steps:
     entrypoint: pack
     env:
       - "TMPDIR=/builder/home/.pack"
+      - "ASANA_CLIENT_ID=${_CLIENT_ID}"
   
   # [START cloudbuild_go_image_yaml]
   # Docker Build
@@ -36,7 +37,7 @@ steps:
     args: ['build', '-t', 
            'us-central1-docker.pkg.dev/eminent-maker-349318/hqarepo/myimage:$SHORT_SHA', '.']
     env:
-    - 'ASANA_CLIENT_ID=1201830256646257'       
+    - "ASANA_CLIENT_ID=${_CLIENT_ID}"       
   # [END cloudbuild_go_image_yaml]
   
   # [START cloudbuild_go_push_yaml]
@@ -52,7 +53,7 @@ steps:
            '--image=us-central1-docker.pkg.dev/eminent-maker-349318/hqarepo/myimage:$SHORT_SHA', 
            '--region', 'us-central1', '--platform', 'managed']
     env:
-    - 'ASANA_CLIENT_ID=1201830256646257'       
+    - "ASANA_CLIENT_ID=${_CLIENT_ID}"       
   # [END cloudbuild_go_deploy_yaml]
 
 # [START cloudbuild_go_logs_yaml]
