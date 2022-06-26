@@ -1,5 +1,6 @@
 github.com/Mariiana15/apis v1.0.8 h1:rtqEKPhpDDsF4jcSJsViTQdu6QUdI553OaGURFaFhPQ=
 github.com/Mariiana15/apis v1.0.8/go.mod h1:3qpfMsSX++nFY+NO3IbFrSIQDOLQzcu11DuvIJf8vUA=
+github.com/Mariiana15/dbmanager v1.0.18/go.mod h1:byKh+AhDOIX0iQPRrvU6/o5lDth7ygSgzgfeSqXMPT0=
 github.com/Mariiana15/dbmanager v1.0.22 h1:mnLp1C1Hh+M6TYp3I8MYkUHHv6sit3eXhgfHHQIv19I=
 github.com/Mariiana15/dbmanager v1.0.22/go.mod h1:byKh+AhDOIX0iQPRrvU6/o5lDth7ygSgzgfeSqXMPT0=
 github.com/Mariiana15/serverutils v1.0.8 h1:XYPaCNpYKnifDOrRhlpx/gA6hBEQOvnv2jlZYvHiB+k=
@@ -17,6 +18,8 @@ github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfC
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/gorilla/websocket v1.5.0 h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
+github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/leodido/go-urn v1.2.1 h1:BqpAaACuzVSgi/VLzGZIobT2z4v53pjosyNd9Yv6n/w=
 github.com/leodido/go-urn v1.2.1/go.mod h1:zt4jvISO2HfUBqxjfIshjdMTYS56ZS/qv49ictyFfxY=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
