@@ -1,17 +1,13 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/Mariiana15/apis"
 	"github.com/Mariiana15/serverutils"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-
-	loadEnv()
 
 	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd")
 	os.Setenv("REFRESH_SECRET", "mcmvmkmsdnfsdmfdsjf")
@@ -51,11 +47,4 @@ func main() {
 	server.Handle("DELETE", "/cars/:id", server.AddMiddleware(CarDeleteRequest, CheckAuth(), Loggin()))
 	server.Listen()
 
-}
-
-func loadEnv() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env")
-	}
 }
