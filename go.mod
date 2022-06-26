@@ -3,7 +3,7 @@ module server
 go 1.17
 
 require (
-	github.com/Mariiana15/apis v1.0.9 // indirect
+	github.com/Mariiana15/apis v1.0.10 // indirect
 	github.com/Mariiana15/dbmanager v1.0.22 // indirect
 	github.com/Mariiana15/serverutils v1.0.8 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
