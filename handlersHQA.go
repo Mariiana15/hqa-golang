@@ -6,15 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Mariiana15/apis"
 	"github.com/Mariiana15/dbmanager"
-	"github.com/Mariiana15/serverutils"
 )
 
 func HandleParamsTech(w http.ResponseWriter, r *http.Request) {
 
-	var m serverutils.ResponseOk
-	result, err := serverutils.GetBodyResponse(r)
+	var m ResponseOk
+	result, err := GetBodyResponse(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -26,23 +24,33 @@ func HandleParamsTech(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", "Rquest no contein field 'technologies', 'architecture','requirement','id'")
 		return
 	}
-
+	var rop requestOpenAI
+	rop.Text = result["requirement"].(string)
+	rop.Id = result["id"].(string)
+	rop.Options = result["technologies"].(string)
+	rop.Auxiliar = result["architecture"].(string)
 	err = dbmanager.SetInfoTech(result["technologies"].(string), result["architecture"].(string), result["requirement"].(string), result["id"].(string))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
 		return
 	}
+	_, errOperation := GetOperationUpdateContext(r, &rop)
+	if errOperation != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
-	m.Message = serverutils.MsgResponseOk1
+	m.Message = MsgResponseOk1
 	byteData, _ := json.Marshal(m)
 	w.Write(byteData)
 }
 func HandleChangeStateSection(w http.ResponseWriter, r *http.Request) {
 
-	var m serverutils.ResponseOk
-	result, err := serverutils.GetBodyResponse(r)
+	var m ResponseOk
+	result, err := GetBodyResponse(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -61,15 +69,15 @@ func HandleChangeStateSection(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	m.Message = serverutils.MsgResponseOk1
+	m.Message = MsgResponseOk1
 	byteData, _ := json.Marshal(m)
 	w.Write(byteData)
 }
 
 func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 
-	var m serverutils.ResponseOk
-	result, err := serverutils.GetBodyResponse(r)
+	var m ResponseOk
+	result, err := GetBodyResponse(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -88,7 +96,7 @@ func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 	}
 	var t dbmanager.Task
 	t.Hid = result["id"].(string)
-	errTaskR := apis.CreateUserStoryResultHQA(&t)
+	errTaskR := CreateUserStoryResultHQA(&t)
 	if errTaskR != nil {
 		log.Println(errTaskR)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -97,7 +105,7 @@ func HandleChangeStateUserStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	m.Message = serverutils.MsgResponseOk1
+	m.Message = MsgResponseOk1
 	byteData, _ := json.Marshal(m)
 	w.Write(byteData)
 }
@@ -106,9 +114,9 @@ func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 
 	var t dbmanager.Task
 	var res dbmanager.Result
-	var m serverutils.ResponseOk
+	var m ResponseOk
 
-	body, err := serverutils.GetBodyResponse(r)
+	body, err := GetBodyResponse(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
@@ -125,7 +133,7 @@ func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	m.Message = serverutils.MsgResponseOk1
+	m.Message = MsgResponseOk1
 	byteData, _ = json.Marshal(m)
 	w.Write(byteData)
 }
@@ -133,8 +141,8 @@ func HandleResultUserStory(w http.ResponseWriter, r *http.Request) {
 func HandleGetValidateUStory(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	tokenString := serverutils.ExtractToken(r)
-	acc, err2 := serverutils.ExtractTokenMetadataWS(tokenString)
+	tokenString := ExtractToken(r)
+	acc, err2 := ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)

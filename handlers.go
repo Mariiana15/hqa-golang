@@ -6,21 +6,175 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Mariiana15/apis"
 	"github.com/Mariiana15/dbmanager"
-	"github.com/Mariiana15/serverutils"
 )
 
 func HandleRoot(write_ http.ResponseWriter, req *http.Request) {
 	write_.WriteHeader(http.StatusOK)
 }
+func HandleOpenBuildHQA(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	var rop requestOpenAI
+	elements, err := BuildUserStory(req, &rop)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+func HandleOpenAI(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	var rop requestOpenAI
+	elements, err := GetIndustryOIA(req, &rop)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAI_US_Context(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusAccepted)
+	var rop requestOpenAI
+	elements, err := GetUserStoryContext(req, &rop)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAI_US_Operation(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusAccepted)
+	var rop requestOpenAI
+	elements, err := GetOperationContext(req, &rop)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+func HandleOpenAI_US_OperationUpdate(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusAccepted)
+	var rop requestOpenAI
+	elements, err := GetOperationUpdateContext(req, &rop)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIProcess(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetProcess(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIFunctions(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetFunctions(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIRisk(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetRisk(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIKeywords(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetKeywords(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIKeyWordsAtack(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetKeywordsAtack(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIPrograms(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetPrograms(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIKeywordsBBDD(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetKeywordsBBDD(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAIKeywordsDesign(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetKeywordsDesign(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
+
+func HandleOpenAILimit(w http.ResponseWriter, req *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	elements, err := GetLimit(req)
+	if err != nil {
+		fmt.Fprintf(w, "{\"error\": \"%v\"}", err.Error())
+	}
+	json.NewEncoder(w).Encode(elements)
+
+}
 
 func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	var asana apis.Asana
+	var asana Asana
 	asana.GetProperties()
-	m, err := apis.GetCode(asana)
+	m, err := GetCode(asana)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err)
@@ -33,13 +187,12 @@ func HandleAsanaCode(w http.ResponseWriter, req *http.Request) {
 func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	tokenString := serverutils.ExtractToken(req)
-	acc, err2 := serverutils.ExtractTokenMetadataWS(tokenString)
+	tokenString := ExtractToken(req)
+	acc, err2 := ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
 		return
-
 	}
 	code, cv, errDB := dbmanager.GetUserCodeAsana(acc.UserId)
 	if errDB != nil {
@@ -54,12 +207,12 @@ func HandleAsanaCodeDB(w http.ResponseWriter, req *http.Request) {
 func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
-	result, _ := serverutils.GetBodyResponse(req)
+	result, _ := GetBodyResponse(req)
 	code := result["code"].(string)
 	code_verifier := result["code_verifier"].(string)
 
-	tokenString := serverutils.ExtractToken(req)
-	_, err2 := serverutils.ExtractTokenMetadataWS(tokenString)
+	tokenString := ExtractToken(req)
+	_, err2 := ExtractTokenMetadataWS(tokenString)
 	if err2 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "{\"error\": \"%v\"}", err2)
@@ -67,8 +220,8 @@ func HandleAsanaOauth(w http.ResponseWriter, req *http.Request) {
 	}
 
 	client := &http.Client{}
-	r := apis.OauthAsana(code, code_verifier)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := OauthAsana(code, code_verifier)
+	res, err := GetBodyResponseRequest(client, r)
 	log.Println(res)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
@@ -85,12 +238,12 @@ func HandleAsanaProjects(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	client := &http.Client{}
 	token := req.Header.Get("token")
-	r := apis.ProjectsAsana(token)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := ProjectsAsana(token)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetGeneral(res)
+		elements := GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -105,12 +258,12 @@ func HandleAsanaSections(w http.ResponseWriter, req *http.Request) {
 	client := &http.Client{}
 	token := req.Header.Get("token")
 	project := req.Header.Get("projectId")
-	r := apis.SectionsAsana(token, project)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := SectionsAsana(token, project)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetGeneral(res)
+		elements := GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -126,12 +279,12 @@ func HandleAsanaSectionsId(w http.ResponseWriter, req *http.Request) {
 	client := &http.Client{}
 	token := req.Header.Get("token")
 	section := req.Header.Get("id")
-	r := apis.SectionsAsanaId(token, section)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := SectionsAsanaId(token, section)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetGeneral(res)
+		elements := GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -151,31 +304,31 @@ func HandleAsanaSectionsTasksAsync(w http.ResponseWriter, req *http.Request, ele
 		r2 := make(chan *http.Request)
 		r3 := make(chan *http.Request)
 
-		go apis.GetTaskAsync("task", token, elements[i].Gid, r)
-		go apis.GetTaskAsync("stories", token, elements[i].Gid, r2)
-		go apis.GetTaskAsync("dependencies", token, elements[i].Gid, r3)
+		go GetTaskAsync("task", token, elements[i].Gid, r)
+		go GetTaskAsync("stories", token, elements[i].Gid, r2)
+		go GetTaskAsync("dependencies", token, elements[i].Gid, r3)
 
 		rr := <-r
-		res, err := serverutils.GetBodyResponseRequest(client, rr)
+		res, err := GetBodyResponseRequest(client, rr)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		task = apis.GetTask(res)
+		task = GetTask(res)
 
 		rr2 := <-r2
-		res2, err := serverutils.GetBodyResponseRequest(client, rr2)
+		res2, err := GetBodyResponseRequest(client, rr2)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		elements_ := apis.GetStoriesFilter(res2, "comment")
+		elements_ := GetStoriesFilter(res2, "comment")
 		task.Story = elements_
 
 		rr3 := <-r3
-		res3, err := serverutils.GetBodyResponseRequest(client, rr3)
+		res3, err := GetBodyResponseRequest(client, rr3)
 		if err != nil {
 			fmt.Fprintf(w, "%v\"%v\"}", res, err)
 		}
-		elements_dep := apis.GetGeneral(res3)
+		elements_dep := GetGeneral(res3)
 		task.Dependecies = elements_dep
 		tasks = append(tasks, task)
 	}
@@ -188,12 +341,12 @@ func HandleAsanaSectionsTasks(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r, t := apis.TaskSectionAsana(token, section)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r, t := TaskSectionAsana(token, section)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	}
-	elements := apis.GetGeneral(res)
+	elements := GetGeneral(res)
 	if len(elements) > 0 {
 		fmt.Fprintf(w, "{\"tasks\":\"%v\",\"timeAsync\":\"%v\"}", len(elements), t)
 		HandleAsanaSectionsTasksAsync(w, req, elements, token, section)
@@ -208,12 +361,12 @@ func HandleAsanaTasks(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	section := req.Header.Get("sectionId")
 	client := &http.Client{}
-	r, _ := apis.TaskSectionAsana(token, section)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r, _ := TaskSectionAsana(token, section)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetGeneral(res)
+		elements := GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -228,12 +381,12 @@ func HandleAsanaTasksId(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := apis.TaskAsana(token, task)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := TaskAsana(token, task)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		json.NewEncoder(w).Encode(apis.GetTask(res))
+		json.NewEncoder(w).Encode(GetTask(res))
 	}
 }
 
@@ -243,12 +396,12 @@ func HandleAsanaTasksIdStories(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := apis.StoriesAsana(token, task)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := StoriesAsana(token, task)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetStoriesFilter(res, "comment")
+		elements := GetStoriesFilter(res, "comment")
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -263,12 +416,12 @@ func HandleAsanaTasksIdDependencies(w http.ResponseWriter, req *http.Request) {
 	token := req.Header.Get("token")
 	task := req.Header.Get("id")
 	client := &http.Client{}
-	r := apis.DependenciesAsana(token, task)
-	res, err := serverutils.GetBodyResponseRequest(client, r)
+	r := DependenciesAsana(token, task)
+	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Fprintf(w, "%v\"%v\"}", res, err)
 	} else {
-		elements := apis.GetGeneral(res)
+		elements := GetGeneral(res)
 		if len(elements) > 0 {
 			json.NewEncoder(w).Encode(elements)
 		} else {
@@ -290,7 +443,7 @@ func CarPostRequest(write_ http.ResponseWriter, req *http.Request) {
 	err = dbmanager.InsertDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgDatabase)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgDatabase)
 		return
 	}
 	responseCarBody(&car, write_)
@@ -302,7 +455,7 @@ func CarGetRequest(write_ http.ResponseWriter, req *http.Request) {
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgNotFound)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgNotFound)
 		return
 	}
 	write_.WriteHeader(http.StatusOK)
@@ -315,13 +468,13 @@ func CarDeleteRequest(write_ http.ResponseWriter, req *http.Request) {
 	write_.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		write_.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgNotFound)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgNotFound)
 		return
 	}
 	err = dbmanager.DeleteDB(&car)
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgDatabase)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgDatabase)
 		return
 	}
 	write_.WriteHeader(http.StatusNonAuthoritativeInfo)
@@ -333,7 +486,7 @@ func responseCarBody(car *dbmanager.Car, write_ http.ResponseWriter) {
 	response, err := car.ToJson()
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgMalFormat)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgMalFormat)
 		return
 	}
 	write_.Write(response)

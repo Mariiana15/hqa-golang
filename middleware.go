@@ -12,20 +12,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Mariiana15/apis"
 	"github.com/Mariiana15/dbmanager"
-	"github.com/Mariiana15/serverutils"
 )
 
 func CheckAuthWebSocket() Middleware {
 	return func(hf http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			var ws apis.WebsocketHQA
+			var ws WebsocketHQA
 			ws.NewWebSocketHQA()
 			if r.Header.Get("Sec-Websocket-Protocol") != ws.Protocol {
 				fmt.Println(401)
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(w, "{\"error\": \"%v\"}", serverutils.MsgUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", MsgUnauthorized)
 				return
 			}
 			hf(w, r)
@@ -37,16 +35,16 @@ func CheckAuthToken() Middleware {
 	return func(hf http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			err := serverutils.TokenValid(r)
+			err := TokenValid(r)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(w, "{\"error\": \"%v\"}", serverutils.MsgUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", MsgUnauthorized)
 				return
 			}
-			_, err = serverutils.ExtractTokenMetadata(r)
+			_, err = ExtractTokenMetadata(r)
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(w, "{\"error\": \"%v\"}", serverutils.MsgUnauthorized)
+				fmt.Fprintf(w, "{\"error\": \"%v\"}", MsgUnauthorized)
 				return
 			}
 			hf(w, r)
@@ -63,7 +61,7 @@ func CheckAuth() Middleware {
 
 			if len(authStr) != 2 || authStr[0] != "Basic" {
 				write_.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgUnauthorized)
+				fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgUnauthorized)
 				return
 			}
 			payload, _ := base64.StdEncoding.DecodeString(authStr[1])
@@ -73,7 +71,7 @@ func CheckAuth() Middleware {
 			if len(pair) != 2 || !validate {
 
 				write_.WriteHeader(http.StatusUnauthorized)
-				fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgUnauthorized)
+				fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgUnauthorized)
 				return
 			}
 			hf(write_, request)
@@ -95,7 +93,7 @@ func validateBasic(write_ http.ResponseWriter, username, password string) bool {
 	err := auth.GetUserBasic("0", "x")
 	if err != nil {
 		write_.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(write_, "{\"error\": \"%v\"}", serverutils.MsgDatabase)
+		fmt.Fprintf(write_, "{\"error\": \"%v\"}", MsgDatabase)
 		return false
 	}
 	if username == auth.User && password == auth.Pass {

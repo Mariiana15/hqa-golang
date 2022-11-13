@@ -7,10 +7,291 @@
     },
     "websocket": {
         "hosts": [
-            "http://localhost:3000", "https://mousee-beta.web.app"
-
+            "http://localhost:3000",
+            "https://mousee-beta.web.app"
         ],
         "protocol": "hqaToken",
         "token": "key"
-    }
+    },
+    "config_OpenIA_Industry": {
+        "model": "text-davinci-002",
+        "prompt": "Clasifica las 3 industrias en esto texto:\n",
+        "temperature": 0.5,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Stakeholder": {
+        "model": "text-davinci-001",
+        "prompt": "Clasifica los 3 tipos de negocio en este texto:\n",
+        "temperature": 0.39,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.65,
+        "presence_penalty": 0.5
+    },
+    "config_OpenIA_Functionality": {
+        "model": "text-davinci-001",
+        "prompt": "Clasifica las actividades o funciones en esto texto:\n",
+        "temperature": 0.79,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.85,
+        "presence_penalty": 2
+    },
+    "config_OpenIA_Process": {
+        "model": "text-davinci-001",
+        "prompt": "Clasifica procesos en este texto:\n",
+        "temperature": 0.79,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.85,
+        "presence_penalty": 2
+    },
+    "config_OpenIA_Risk": {
+        "model": "text-davinci-001",
+        "prompt": "Clasifica riesgos en este texto:\n",
+        "temperature": 0.36,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.65,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Keywords": {
+        "model": "text-davinci-001",
+        "prompt": "Extraer keywords de este texto:\n",
+        "temperature": 0.3,
+        "max_tokens": 60,
+        "top_p": 1,
+        "frequency_penalty": 0.8,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_KeywordsAtack": {
+        "model": "text-davinci-001",
+        "prompt": "Keyword ataques de seguridad de las siguientes frases:\n",
+        "temperature": 0.5,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Programs": {
+        "model": "text-davinci-001",
+        "prompt": "Indentifica lenguajes de programacion del siguiente texto:\n",
+        "temperature": 0.5,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_KeywordsBBDD": {
+        "model": "text-davinci-001",
+        "prompt": "keywords elementos de la base de datos del siguiente texto:\n",
+        "temperature": 0.5,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_KeywordsDesign": {
+        "model": "text-davinci-001",
+        "prompt": "keywords elementos de diseno del siguiente texto:\n",
+        "temperature": 0.8,
+        "max_tokens": 150,
+        "top_p": 0.75,
+        "frequency_penalty": 2,
+        "presence_penalty": 1
+    },
+    "config_OpenIA_Limit": {
+        "model": "text-davinci-001",
+        "prompt": "Definir las restricciones y limitantes del siguiente texto:\n",
+        "temperature": 0.46,
+        "max_tokens": 283,
+        "top_p": 1,
+        "frequency_penalty": 0.25,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Risk_from_Industry": {
+        "model": "text-davinci-002",
+        "prompt": "Crear una lista con los riesgos informaticos para la industria de la",
+        "temperature": 0.5,
+        "max_tokens": 250,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_KeyWords_from_Industry": {
+        "model": "text-davinci-002",
+        "prompt": "Recuperar  las palabras clave de seguridad  informatica de la siguiente oracion: ",
+        "temperature": 0.5,
+        "max_tokens": 200,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_from_Industry": {
+        "model": "text-davinci-002",
+        "prompt": "Recuperar los contextos de seguridad informatica de la siguiente oracion: ",
+        "temperature": 0.5,
+        "max_tokens": 250,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_UserStory_Contextos": {
+        "model": "text-davinci-002",
+        "prompt": "Recuperar los posibles contextos del siguiente parrafo: ",
+        "temperature": 0.7,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_UserStory_KeyWords": {
+        "model": "text-davinci-001",
+        "prompt": "Recuperar las palabras clave del contexto de civerseguridad de la siguientes frases: ",
+        "temperature": 0.6,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.3,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_UserStory_Test1": {
+        "model": "text-davinci-001",
+        "prompt": "Test de civerseguridad de las siguientes actividades: ",
+        "temperature": 0.55,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.2,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_UserStory_Test2": {
+        "model": "text-davinci-002",
+        "prompt": "Pruebas de seguridad realizar de la siguientes actividades: ",
+        "temperature": 0.55,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Context_UserStory_Contemplations": {
+        "model": "text-davinci-002",
+        "prompt": "Contemplaciones de seguridad para las siguientes actividades: ",
+        "temperature": 0.5,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Stakeholder_UserStory_Vulnerabilidades": {
+        "model": "text-davinci-002",
+        "prompt": "Cuales son las principales vulnerabilidades de seguridad informatica para las profesiones de : ",
+        "temperature": 0.3,
+        "max_tokens": 200,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Stakeholder_UserStory_Activities": {
+        "model": "text-davinci-002",
+        "prompt": "Cuales son las principales activiades en la nube para las profesiones de : ",
+        "temperature": 0.3,
+        "max_tokens": 200,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Stakeholder_UserStory_KeyActivities": {
+        "model": "text-davinci-002",
+        "prompt": "Define las pablaras clave de la siguiente oracion: ",
+        "temperature": 0.3,
+        "max_tokens": 200,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    } ,
+    "config_OpenIA_Stakeholder_UserStory_Test": {
+        "model": "text-davinci-002",
+        "prompt": "Enlista Caules deberian ser las pruebas de seguridad de la informacion para los siguientes trabajos: ",
+        "temperature": 0.3,
+        "max_tokens": 300,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Operations_Tech": {
+        "model": "text-davinci-002",
+        "prompt": "Define las palabras clave y criterios de civerseguridad del siguiente parrafo: ",
+        "temperature": 0.3,
+        "max_tokens": 300,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Operations_Owasp": {
+        "model": "text-davinci-002",
+        "prompt": "Define el top four de owasp para la siguiente frase ",
+        "temperature": 0.3,
+        "max_tokens": 400,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Security_Cases": {
+        "model": "text-davinci-002",
+        "prompt": "Escribe casos de prueba de seguridad con los siguientes criterios: ",
+        "temperature": 0.3,
+        "max_tokens": 400,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Risk_Cases": {
+        "model": "text-davinci-002",
+        "prompt": "Define los riesgos de seguridad en la siguiente oracion: ",
+        "temperature": 0.3,
+        "max_tokens": 200,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_Tiltle": {
+        "model": "text-davinci-002",
+        "prompt": "Define en 3 palabras el siguiente texto: ",
+        "temperature": 0.35,
+        "max_tokens": 100,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_StakeHolderJob": {
+        "model": "text-davinci-002",
+        "prompt": "Define los 3 personajes de este texto: ",
+        "temperature": 0.3,
+        "max_tokens": 280,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    },
+    "config_OpenIA_20": {
+        "model": "text-davinci-002",
+        "prompt": "Define las 20 palabras clave de la siguiente frase: ",
+        "temperature": 0.3,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    }, 
+    "config_OpenIA_Afinidad": {
+        "model": "text-davinci-002",
+        "prompt": "Define el porcentaje de afinidad de esta lista con respecto a esta frase: ",
+        "temperature": 0.3,
+        "max_tokens": 150,
+        "top_p": 1,
+        "frequency_penalty": 0.5,
+        "presence_penalty": 0
+    }    
+
+
 }
