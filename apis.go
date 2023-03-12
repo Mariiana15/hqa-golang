@@ -176,16 +176,16 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 	timeCurrent := 3000
 	timeCurrentSend := 1
 
-	for i := 0; i <= len(elements)-1; i++ {
+	for i := 0; i <= len(elements); i++ {
 
 		var task dbmanager.Task
 		rt := make(chan *http.Request)
-		rs := make(chan *http.Request)
-		rd := make(chan *http.Request)
+		//rs := make(chan *http.Request)
+		//rd := make(chan *http.Request)
 
 		go GetTaskAsync("task", token, elements[i].Gid, rt)
-		go GetTaskAsync("stories", token, elements[i].Gid, rs)
-		go GetTaskAsync("dependencies", token, elements[i].Gid, rd)
+		//go GetTaskAsync("stories", token, elements[i].Gid, rs)
+		//go GetTaskAsync("dependencies", token, elements[i].Gid, rd)
 
 		rst := <-rt
 		res, err := GetBodyResponseRequest(client, rst)
@@ -203,7 +203,7 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 			return nil, err
 		}
 
-		rss := <-rs
+		/*rss := <-rs
 		resSt, err := GetBodyResponseRequest(client, rss)
 		if err != nil {
 			return nil, err
@@ -225,12 +225,19 @@ func HandleAsanaSectionsTasksWS(client *http.Client, ws *websocket.Conn, element
 		errDB = task.SetUserStoryAsanaDependence()
 		if errDB != nil {
 			return nil, err
+		}*/
+		industry, errorInd := GetIndustryV2(rst,task.Notes)
+		if errorInd != nil {
+			return nil, errorInd
 		}
+		fmt.Println("technologie")
+		fmt.Println(industry)
+
 		errTask := createUserStoryHQA(&task, user)
 		if errTask != nil {
 			return nil, errTask
 		}
-
+		log.Println("service")
 		/*errTaskR := CreateUserStoryResultHQA(&task)
 		if errTaskR != nil {
 			return nil, errTaskR

@@ -2,7 +2,7 @@
     "asana": {
         "clientId": "1201830256646257",
         "clientSecrect": "3d19ec3d43e86e52add5d0439bafc054",
-        "redirect_uri": "http://localhost:3000/sync/",
+        "redirect_uri": "http://localhost:3000/",
         "timeAsyncTask": 1700
     },
     "websocket": {
@@ -15,7 +15,7 @@
     },
     "config_OpenIA_Industry": {
         "model": "text-davinci-002",
-        "prompt": "Clasifica las 3 industrias en esto texto:\n",
+        "prompt": "Clasifica las 2 industrias en esto texto:\n",
         "temperature": 0.5,
         "max_tokens": 150,
         "top_p": 1,
@@ -267,7 +267,7 @@
     },
     "config_OpenIA_StakeHolderJob": {
         "model": "text-davinci-002",
-        "prompt": "Define los 3 personajes de este texto: ",
+        "prompt": "Define un personaje de este texto: ",
         "temperature": 0.3,
         "max_tokens": 280,
         "top_p": 1,
@@ -292,6 +292,16 @@
         "frequency_penalty": 0.5,
         "presence_penalty": 0
     }    
+,
 
+"config_OpenIA_Industria_v2": {
+    "model": "text-davinci-002",
+    "prompt": "Clasifica las industrias en esto texto: ",
+    "temperature": 0.39,
+    "max_tokens": 150,
+    "top_p": 1,
+    "frequency_penalty": 0.85,
+    "presence_penalty": 1
+}    
 
 }

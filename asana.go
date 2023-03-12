@@ -67,7 +67,7 @@ func GetCode(asana Asana) (string, error) {
 	code_verifier := v.String()
 	code_challenge := v.CodeChallengeS256()
 	code_challenge_method := "S256"
-	message = fmt.Sprintf("{\"url\": \"%vclient_id=%v&redirect_uri=%v&response_type=code&state=thisIsARandomString&code_challenge_method=%v&code_challenge=%v&scope=default\",\"code_verifier\":\"%v\"}", oautCodehUrl, "1201830256646257", "http://localhost:3000/sync/", code_challenge_method, code_challenge, code_verifier)
+	message = fmt.Sprintf("{\"url\": \"%vclient_id=%v&redirect_uri=%v&response_type=code&state=thisIsARandomString&code_challenge_method=%v&code_challenge=%v&scope=default\",\"code_verifier\":\"%v\"}", oautCodehUrl, "1201830256646257", "http://localhost:3000/", code_challenge_method, code_challenge, code_verifier)
 	return message, nil
 }
 

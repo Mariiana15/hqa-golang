@@ -12,8 +12,36 @@ import (
 	"strings"
 
 	"github.com/joho/godotenv"
-)
+)////////////////////////////////
+/////////////////////////////////
+func GetIndustryV2(req *http.Request, st string) (string, error) {
 
+	client := &http.Client{}
+	b := GetOpenAIConfig("config_OpenIA_Industria_v2")
+	b.Prompt = b.Prompt + st
+	url := fmt.Sprintf("%v", os.Getenv("URL_OPEN_AI"))
+	j, _ := json.Marshal(b)
+	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
+	r.Header.Set("Content-Type", "application/json")
+	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
+	r.Header.Set("openai-organization", "org-jZhovXfi693JsdyJR781cHOK")
+	res, err := GetBodyResponseRequest(client, r)
+	if err != nil {
+		return "", err
+	} else {
+		elements := GetGeneralOpenaAI(res)
+	
+		if len(elements.Choices) > 0 {
+			return elements.Choices[0].Text, nil
+		} else {
+
+			return "", fmt.Errorf("No se ha recuperado los Test de cada Stakeholder")
+		}
+	}
+}
+
+///////////////////////////////////
+/////////////////////////////
 func GetPorcentural(req *http.Request, lt string, st string) (int, error) {
 
 	client := &http.Client{}
@@ -24,7 +52,7 @@ func GetPorcentural(req *http.Request, lt string, st string) (int, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return 0, err
@@ -51,7 +79,7 @@ func GetUserCasesSecurity(req *http.Request, st string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -76,7 +104,7 @@ func GetKeywordsPart(req *http.Request, st string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -101,7 +129,7 @@ func GetUserStoryTiltle(req *http.Request, st string, id string, us *userst) err
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -156,7 +184,7 @@ func BuildUserStory(req *http.Request, rop *requestOpenAI) (userst, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return usJson, err
@@ -225,7 +253,7 @@ func GetUserStory_(req *http.Request, st string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -251,7 +279,7 @@ func GetOperationOwasp(req *http.Request, st string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -277,7 +305,7 @@ func GetOperationRisk(req *http.Request, st string, c *OperationsUserStory) erro
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -303,7 +331,7 @@ func GetOperationDesign(req *http.Request, st string, c *OperationsUserStory) er
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -329,7 +357,7 @@ func GetOperationBBDD(req *http.Request, st string, c *OperationsUserStory) erro
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -355,7 +383,7 @@ func GetOperationProcess(req *http.Request, st string, c *OperationsUserStory) e
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -381,7 +409,7 @@ func GetOperationSecurity(req *http.Request, st string, c *OperationsUserStory) 
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -407,7 +435,7 @@ func GetStakeholderTest(req *http.Request, st string, c *StakeHoldertUserStory) 
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -434,7 +462,7 @@ func GetStakeholderKeyActivites(req *http.Request, st string, c *StakeHoldertUse
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -460,7 +488,7 @@ func GetStakeholderActivites(req *http.Request, st string, c *StakeHoldertUserSt
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -486,7 +514,7 @@ func GetStakeholderRisk(req *http.Request, st string, c *StakeHoldertUserStory) 
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -512,7 +540,7 @@ func GetUserStoryContemplations(req *http.Request, st string, c *ContextUserStor
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -538,7 +566,7 @@ func GetUserStoryTest2(req *http.Request, st string, c *ContextUserStory) error 
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -564,7 +592,7 @@ func GetUserStoryTest1(req *http.Request, st string, c *ContextUserStory) error 
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -590,7 +618,7 @@ func GetUserStoryKeywords(req *http.Request, s string, c *ContextUserStory) erro
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return err
@@ -656,7 +684,7 @@ func GetOperationUpdateContext(req *http.Request, rop *requestOpenAI) (Operation
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return c, err
@@ -711,7 +739,7 @@ func GetOperationContext(req *http.Request, rop *requestOpenAI) (OperationsUserS
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return c, err
@@ -761,7 +789,7 @@ func GetUserStoryContext(req *http.Request, rop *requestOpenAI) (ContextUserStor
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return c, err
@@ -829,7 +857,7 @@ func GetIndustryOIA(req *http.Request, rop *requestOpenAI) (ResponseOpenAI, erro
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return a, err
@@ -873,7 +901,7 @@ func GetRiskForIndustry(req *http.Request, ind string) ([]Industry, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return i, err
@@ -915,7 +943,7 @@ func GetKeyWordsForIndustry(req *http.Request, o string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -939,7 +967,7 @@ func GetContextForIndustry(req *http.Request, o string) (string, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		return "", err
@@ -969,7 +997,7 @@ func GetStakeHolder(req *http.Request, st string, c *StakeHoldertUserStory) erro
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1024,7 +1052,7 @@ func GetFunctions(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1073,7 +1101,7 @@ func GetProcess(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1123,7 +1151,7 @@ func GetRisk(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1173,7 +1201,7 @@ func GetKeywords(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1223,7 +1251,7 @@ func GetKeywordsAtack(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1273,7 +1301,7 @@ func GetPrograms(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1323,7 +1351,7 @@ func GetKeywordsBBDD(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1373,7 +1401,7 @@ func GetKeywordsDesign(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -1423,7 +1451,7 @@ func GetLimit(req *http.Request) (ResponseOpenAI, error) {
 	r, _ := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(j))
 	r.Header.Set("Content-Type", "application/json")
 	r.Header.Set("Authorization", "Bearer "+os.Getenv("TOKEN_OPEN_AI"))
-	r.Header.Set("openai-organization", "org-TyRQ0B97McE6icXWCM3ZspXZ")
+	r.Header.Set("openai-organization", "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")
 	res, err := GetBodyResponseRequest(client, r)
 	if err != nil {
 		fmt.Println(err.Error())
